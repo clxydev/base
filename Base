@@ -1,0 +1,2218 @@
+--[[
+    ██████╗ ██╗  ██╗   ██╗███╗   ███╗██████╗ ██╗   ██╗███████╗██╗   ██╗██╗
+   ██╔═══██╗██║  ╚██╗ ██╔╝████╗ ████║██╔══██╗██║   ██║██╔════╝██║   ██║██║
+   ██║   ██║██║   ╚████╔╝ ██╔████╔██║██████╔╝██║   ██║███████╗██║   ██║██║
+   ██║   ██║██║    ╚██╔╝  ██║╚██╔╝██║██╔═══╝ ██║   ██║╚════██║██║   ██║██║
+   ╚██████╔╝███████╗██║   ██║ ╚═╝ ██║██║     ╚██████╔╝███████║╚██████╔╝██║
+    ╚═════╝ ╚══════╝╚═╝   ╚═╝     ╚═╝╚═╝      ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝
+    
+    OlympusUI v1.0.0
+    Custom UI Library for Roblox — Based on WindUI by Footagesus
+    Modified & Extended by: You
+    
+    FEATURES:
+    - Multi-theme support (Dark, Crimson, Midnight, Ocean, Sunset, Forest, Rose, Cyber)
+    - Side navigation (left sidebar)
+    - Toggle / Checkbox
+    - Button + Notify system with queue
+    - Slider + Input
+    - Dropdown + Colorpicker
+    - Badge system on tabs
+    - ProgressBar element
+    - Tooltip system
+    - Group collapse/expand
+    - Config save/load
+    - Executor detection + color tagging
+    
+    USAGE:
+    local OlympusUI = loadstring(game:HttpGet("YOUR_RAW_URL"))()
+    local Window = OlympusUI:CreateWindow({ Title = "My Hub", Theme = "Dark" })
+]]
+
+-- ============================================================
+-- SERVICES
+-- ============================================================
+local cloneref = cloneref or clonereference or function(i) return i end
+
+local Players        = cloneref(game:GetService("Players"))
+local RunService     = cloneref(game:GetService("RunService"))
+local TweenService   = cloneref(game:GetService("TweenService"))
+local UserInputService = cloneref(game:GetService("UserInputService"))
+local HttpService    = cloneref(game:GetService("HttpService"))
+local CoreGui        = cloneref(game:GetService("CoreGui"))
+
+local LocalPlayer   = Players.LocalPlayer
+local PlayerGui     = LocalPlayer:WaitForChild("PlayerGui")
+
+-- ============================================================
+-- OLYMPUSUI CORE
+-- ============================================================
+local OlympusUI = {}
+OlympusUI.__index = OlympusUI
+OlympusUI.Version = "1.0.0"
+OlympusUI.Windows = {}
+OlympusUI._NotifyQueue = {}
+OlympusUI._NotifyActive = false
+
+-- ============================================================
+-- THEMES
+-- ============================================================
+OlympusUI.Themes = {
+    Dark = {
+        Name = "Dark",
+        Background    = Color3.fromHex("#0f0f0f"),
+        Surface       = Color3.fromHex("#1a1a1a"),
+        SurfaceAlt    = Color3.fromHex("#222222"),
+        Border        = Color3.fromHex("#2e2e2e"),
+        Accent        = Color3.fromHex("#7c7cff"),
+        AccentDim     = Color3.fromHex("#4a4aaa"),
+        Text          = Color3.fromHex("#f0f0f0"),
+        TextSub       = Color3.fromHex("#888888"),
+        TextDim       = Color3.fromHex("#555555"),
+        Toggle        = Color3.fromHex("#7c7cff"),
+        ToggleOff     = Color3.fromHex("#333333"),
+        Slider        = Color3.fromHex("#7c7cff"),
+        Notify        = Color3.fromHex("#1a1a2e"),
+        NotifyBorder  = Color3.fromHex("#7c7cff"),
+        Shadow        = Color3.fromHex("#000000"),
+        Red           = Color3.fromHex("#ff4444"),
+        Green         = Color3.fromHex("#44ff88"),
+        Yellow        = Color3.fromHex("#ffcc00"),
+    },
+    Crimson = {
+        Name = "Crimson",
+        Background    = Color3.fromHex("#0d0000"),
+        Surface       = Color3.fromHex("#1a0505"),
+        SurfaceAlt    = Color3.fromHex("#240808"),
+        Border        = Color3.fromHex("#3d0f0f"),
+        Accent        = Color3.fromHex("#ff3131"),
+        AccentDim     = Color3.fromHex("#991a1a"),
+        Text          = Color3.fromHex("#fff0f0"),
+        TextSub       = Color3.fromHex("#aa7777"),
+        TextDim       = Color3.fromHex("#663333"),
+        Toggle        = Color3.fromHex("#ff3131"),
+        ToggleOff     = Color3.fromHex("#3d0f0f"),
+        Slider        = Color3.fromHex("#ff3131"),
+        Notify        = Color3.fromHex("#1a0505"),
+        NotifyBorder  = Color3.fromHex("#ff3131"),
+        Shadow        = Color3.fromHex("#000000"),
+        Red           = Color3.fromHex("#ff6666"),
+        Green         = Color3.fromHex("#44ff88"),
+        Yellow        = Color3.fromHex("#ffcc00"),
+    },
+    Midnight = {
+        Name = "Midnight",
+        Background    = Color3.fromHex("#050510"),
+        Surface       = Color3.fromHex("#0d0d20"),
+        SurfaceAlt    = Color3.fromHex("#12122a"),
+        Border        = Color3.fromHex("#1e1e40"),
+        Accent        = Color3.fromHex("#4d79ff"),
+        AccentDim     = Color3.fromHex("#2a4499"),
+        Text          = Color3.fromHex("#e8eeff"),
+        TextSub       = Color3.fromHex("#7788bb"),
+        TextDim       = Color3.fromHex("#445588"),
+        Toggle        = Color3.fromHex("#4d79ff"),
+        ToggleOff     = Color3.fromHex("#1e1e40"),
+        Slider        = Color3.fromHex("#4d79ff"),
+        Notify        = Color3.fromHex("#0d0d20"),
+        NotifyBorder  = Color3.fromHex("#4d79ff"),
+        Shadow        = Color3.fromHex("#000000"),
+        Red           = Color3.fromHex("#ff4444"),
+        Green         = Color3.fromHex("#44ff88"),
+        Yellow        = Color3.fromHex("#ffcc00"),
+    },
+    Ocean = {
+        Name = "Ocean",
+        Background    = Color3.fromHex("#020d18"),
+        Surface       = Color3.fromHex("#051525"),
+        SurfaceAlt    = Color3.fromHex("#081e30"),
+        Border        = Color3.fromHex("#0f3050"),
+        Accent        = Color3.fromHex("#00b4d8"),
+        AccentDim     = Color3.fromHex("#007090"),
+        Text          = Color3.fromHex("#e0f4ff"),
+        TextSub       = Color3.fromHex("#5599bb"),
+        TextDim       = Color3.fromHex("#2a5570"),
+        Toggle        = Color3.fromHex("#00b4d8"),
+        ToggleOff     = Color3.fromHex("#0f3050"),
+        Slider        = Color3.fromHex("#00b4d8"),
+        Notify        = Color3.fromHex("#051525"),
+        NotifyBorder  = Color3.fromHex("#00b4d8"),
+        Shadow        = Color3.fromHex("#000000"),
+        Red           = Color3.fromHex("#ff4444"),
+        Green         = Color3.fromHex("#44ff88"),
+        Yellow        = Color3.fromHex("#ffcc00"),
+    },
+    Sunset = {
+        Name = "Sunset",
+        Background    = Color3.fromHex("#0f0800"),
+        Surface       = Color3.fromHex("#1a1000"),
+        SurfaceAlt    = Color3.fromHex("#241800"),
+        Border        = Color3.fromHex("#3d2800"),
+        Accent        = Color3.fromHex("#ff8c00"),
+        AccentDim     = Color3.fromHex("#aa5a00"),
+        Text          = Color3.fromHex("#fff5e0"),
+        TextSub       = Color3.fromHex("#aa8855"),
+        TextDim       = Color3.fromHex("#664422"),
+        Toggle        = Color3.fromHex("#ff8c00"),
+        ToggleOff     = Color3.fromHex("#3d2800"),
+        Slider        = Color3.fromHex("#ff8c00"),
+        Notify        = Color3.fromHex("#1a1000"),
+        NotifyBorder  = Color3.fromHex("#ff8c00"),
+        Shadow        = Color3.fromHex("#000000"),
+        Red           = Color3.fromHex("#ff4444"),
+        Green         = Color3.fromHex("#44ff88"),
+        Yellow        = Color3.fromHex("#ffe066"),
+    },
+    Forest = {
+        Name = "Forest",
+        Background    = Color3.fromHex("#030f03"),
+        Surface       = Color3.fromHex("#071407"),
+        SurfaceAlt    = Color3.fromHex("#0c1a0c"),
+        Border        = Color3.fromHex("#163316"),
+        Accent        = Color3.fromHex("#30cc70"),
+        AccentDim     = Color3.fromHex("#1a8844"),
+        Text          = Color3.fromHex("#e8ffe8"),
+        TextSub       = Color3.fromHex("#66aa77"),
+        TextDim       = Color3.fromHex("#335544"),
+        Toggle        = Color3.fromHex("#30cc70"),
+        ToggleOff     = Color3.fromHex("#163316"),
+        Slider        = Color3.fromHex("#30cc70"),
+        Notify        = Color3.fromHex("#071407"),
+        NotifyBorder  = Color3.fromHex("#30cc70"),
+        Shadow        = Color3.fromHex("#000000"),
+        Red           = Color3.fromHex("#ff4444"),
+        Green         = Color3.fromHex("#30cc70"),
+        Yellow        = Color3.fromHex("#ffcc00"),
+    },
+    Rose = {
+        Name = "Rose",
+        Background    = Color3.fromHex("#0f0008"),
+        Surface       = Color3.fromHex("#1a0012"),
+        SurfaceAlt    = Color3.fromHex("#24001a"),
+        Border        = Color3.fromHex("#3d0030"),
+        Accent        = Color3.fromHex("#ff40a0"),
+        AccentDim     = Color3.fromHex("#992266"),
+        Text          = Color3.fromHex("#fff0f8"),
+        TextSub       = Color3.fromHex("#aa6688"),
+        TextDim       = Color3.fromHex("#663355"),
+        Toggle        = Color3.fromHex("#ff40a0"),
+        ToggleOff     = Color3.fromHex("#3d0030"),
+        Slider        = Color3.fromHex("#ff40a0"),
+        Notify        = Color3.fromHex("#1a0012"),
+        NotifyBorder  = Color3.fromHex("#ff40a0"),
+        Shadow        = Color3.fromHex("#000000"),
+        Red           = Color3.fromHex("#ff4444"),
+        Green         = Color3.fromHex("#44ff88"),
+        Yellow        = Color3.fromHex("#ffcc00"),
+    },
+    Cyber = {
+        Name = "Cyber",
+        Background    = Color3.fromHex("#000d0d"),
+        Surface       = Color3.fromHex("#001515"),
+        SurfaceAlt    = Color3.fromHex("#001e1e"),
+        Border        = Color3.fromHex("#003333"),
+        Accent        = Color3.fromHex("#00ffcc"),
+        AccentDim     = Color3.fromHex("#009977"),
+        Text          = Color3.fromHex("#e0fff8"),
+        TextSub       = Color3.fromHex("#44aaaa"),
+        TextDim       = Color3.fromHex("#226666"),
+        Toggle        = Color3.fromHex("#00ffcc"),
+        ToggleOff     = Color3.fromHex("#003333"),
+        Slider        = Color3.fromHex("#00ffcc"),
+        Notify        = Color3.fromHex("#001515"),
+        NotifyBorder  = Color3.fromHex("#00ffcc"),
+        Shadow        = Color3.fromHex("#000000"),
+        Red           = Color3.fromHex("#ff4444"),
+        Green         = Color3.fromHex("#00ffcc"),
+        Yellow        = Color3.fromHex("#ffff00"),
+    },
+}
+
+-- ============================================================
+-- UTILITY
+-- ============================================================
+local Utility = {}
+
+function Utility.Tween(obj, props, duration, style, direction)
+    duration  = duration or 0.2
+    style     = style or Enum.EasingStyle.Quart
+    direction = direction or Enum.EasingDirection.Out
+    local info = TweenInfo.new(duration, style, direction)
+    local t = TweenService:Create(obj, info, props)
+    t:Play()
+    return t
+end
+
+function Utility.Create(class, props, children)
+    local obj = Instance.new(class)
+    for k, v in pairs(props or {}) do
+        obj[k] = v
+    end
+    for _, child in ipairs(children or {}) do
+        child.Parent = obj
+    end
+    return obj
+end
+
+function Utility.MakeDraggable(frame, handle)
+    handle = handle or frame
+    local dragging, dragInput, mousePos, framePos = false, nil, nil, nil
+
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or
+           input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            mousePos = input.Position
+            framePos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    handle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or
+           input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - mousePos
+            frame.Position = UDim2.new(
+                framePos.X.Scale, framePos.X.Offset + delta.X,
+                framePos.Y.Scale, framePos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+function Utility.Round(n, decimals)
+    local factor = 10 ^ (decimals or 0)
+    return math.floor(n * factor + 0.5) / factor
+end
+
+function Utility.Lerp(a, b, t) return a + (b - a) * t end
+
+function Utility.ColorToHex(c)
+    return string.format("#%02X%02X%02X",
+        math.floor(c.R * 255),
+        math.floor(c.G * 255),
+        math.floor(c.B * 255))
+end
+
+-- ============================================================
+-- NOTIFY SYSTEM (Queue-based)
+-- ============================================================
+local NotifyContainer = nil
+
+local function EnsureNotifyContainer()
+    if NotifyContainer and NotifyContainer.Parent then return end
+    local gui = CoreGui:FindFirstChild("OlympusUI_Notify")
+    if gui then gui:Destroy() end
+
+    gui = Utility.Create("ScreenGui", {
+        Name = "OlympusUI_Notify",
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        DisplayOrder = 9999,
+    })
+
+    pcall(function() gui.Parent = CoreGui end)
+    if not gui.Parent then gui.Parent = PlayerGui end
+
+    NotifyContainer = Utility.Create("Frame", {
+        Name = "Container",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(1, -20, 1, -20),
+        AnchorPoint = Vector2.new(1, 1),
+        Size = UDim2.new(0, 320, 1, -20),
+        Parent = gui,
+    })
+
+    Utility.Create("UIListLayout", {
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        VerticalAlignment = Enum.VerticalAlignment.Bottom,
+        Padding = UDim.new(0, 8),
+        Parent = NotifyContainer,
+    })
+end
+
+function OlympusUI:Notify(options)
+    options = options or {}
+    local theme = OlympusUI.Themes[options.Theme or "Dark"]
+
+    EnsureNotifyContainer()
+
+    local title    = options.Title or "OlympusUI"
+    local content  = options.Content or ""
+    local duration = options.Duration or 4
+    local icon     = options.Icon or "bell"
+    local color    = options.Color or theme.NotifyBorder
+
+    -- Frame
+    local notifFrame = Utility.Create("Frame", {
+        Name = "Notification",
+        BackgroundColor3 = theme.Surface,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundTransparency = 0,
+        Parent = NotifyContainer,
+    })
+
+    Utility.Create("UICorner",   { CornerRadius = UDim.new(0, 10), Parent = notifFrame })
+    Utility.Create("UIStroke",   { Color = color, Thickness = 1.5, Parent = notifFrame })
+    Utility.Create("UIPadding",  { PaddingLeft = UDim.new(0,12), PaddingRight = UDim.new(0,12), PaddingTop = UDim.new(0,10), PaddingBottom = UDim.new(0,10), Parent = notifFrame })
+
+    -- Accent bar
+    Utility.Create("Frame", {
+        BackgroundColor3 = color,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 3, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+        Parent = notifFrame,
+    })
+
+    local contentFrame = Utility.Create("Frame", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -10, 0, 0),
+        Position = UDim2.new(0, 10, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        Parent = notifFrame,
+    })
+
+    Utility.Create("UIListLayout", {
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 3),
+        Parent = contentFrame,
+    })
+
+    Utility.Create("TextLabel", {
+        Text = title,
+        TextColor3 = theme.Text,
+        TextSize = 14,
+        Font = Enum.Font.GothamBold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 18),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        LayoutOrder = 1,
+        Parent = contentFrame,
+    })
+
+    if content ~= "" then
+        Utility.Create("TextLabel", {
+            Text = content,
+            TextColor3 = theme.TextSub,
+            TextSize = 12,
+            Font = Enum.Font.Gotham,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextWrapped = true,
+            LayoutOrder = 2,
+            Parent = contentFrame,
+        })
+    end
+
+    -- Progress bar
+    local progressBG = Utility.Create("Frame", {
+        BackgroundColor3 = theme.Border,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 2),
+        Position = UDim2.new(0, 0, 1, -2),
+        Parent = notifFrame,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = progressBG })
+
+    local progressBar = Utility.Create("Frame", {
+        BackgroundColor3 = color,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0),
+        Parent = progressBG,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = progressBar })
+
+    -- Animate in
+    notifFrame.BackgroundTransparency = 1
+    Utility.Tween(notifFrame, { BackgroundTransparency = 0 }, 0.3)
+
+    -- Progress animation
+    Utility.Tween(progressBar, { Size = UDim2.new(0, 0, 1, 0) }, duration, Enum.EasingStyle.Linear)
+
+    -- Auto dismiss
+    task.delay(duration, function()
+        Utility.Tween(notifFrame, { BackgroundTransparency = 1 }, 0.3)
+        task.wait(0.35)
+        notifFrame:Destroy()
+    end)
+end
+
+-- ============================================================
+-- WINDOW
+-- ============================================================
+function OlympusUI:CreateWindow(options)
+    options = options or {}
+
+    local self = setmetatable({}, {__index = OlympusUI})
+
+    self.Title       = options.Title or "OlympusUI"
+    self.Author      = options.Author or ""
+    self.Icon        = options.Icon or ""
+    self.Folder      = options.Folder or "OlympusUI"
+    self.ThemeName   = options.Theme or "Dark"
+    self.Theme       = OlympusUI.Themes[self.ThemeName] or OlympusUI.Themes["Dark"]
+    self.Size        = options.Size or UDim2.fromOffset(580, 420)
+    self.Transparent = options.Transparent or false
+    self._Tabs       = {}
+    self._ActiveTab  = nil
+    self._ToggleKey  = options.ToggleKey or Enum.KeyCode.RightShift
+    self._Flags      = {}
+    self._Open       = true
+
+    -- Root ScreenGui
+    local gui = Utility.Create("ScreenGui", {
+        Name = "OlympusUI_" .. self.Title,
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        DisplayOrder = 100,
+    })
+    pcall(function() gui.Parent = CoreGui end)
+    if not gui.Parent then gui.Parent = PlayerGui end
+    self._Gui = gui
+
+    -- Shadow
+    local shadow = Utility.Create("ImageLabel", {
+        Name = "Shadow",
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://6014261993",
+        ImageColor3 = Color3.fromHex("#000000"),
+        ImageTransparency = 0.5,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(49, 49, 450, 450),
+        Position = UDim2.new(0.5, -10, 0.5, -10),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Size = UDim2.new(0, self.Size.X.Offset + 40, 0, self.Size.Y.Offset + 40),
+        ZIndex = 0,
+        Parent = gui,
+    })
+    self._Shadow = shadow
+
+    -- Main Window Frame
+    local window = Utility.Create("Frame", {
+        Name = "Window",
+        BackgroundColor3 = self.Theme.Background,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Size = self.Size,
+        ZIndex = 1,
+        Parent = gui,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, 12), Parent = window })
+    Utility.Create("UIStroke", { Color = self.Theme.Border, Thickness = 1, Parent = window })
+    self._Window = window
+
+    -- Topbar
+    local topbar = Utility.Create("Frame", {
+        Name = "Topbar",
+        BackgroundColor3 = self.Theme.Surface,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 44),
+        ZIndex = 2,
+        Parent = window,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, 12), Parent = topbar })
+
+    -- Fix bottom corners of topbar
+    Utility.Create("Frame", {
+        BackgroundColor3 = self.Theme.Surface,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0.5, 0),
+        Size = UDim2.new(1, 0, 0.5, 0),
+        ZIndex = 2,
+        Parent = topbar,
+    })
+
+    -- Title Label
+    local titleLabel = Utility.Create("TextLabel", {
+        Text = self.Title,
+        TextColor3 = self.Theme.Text,
+        TextSize = 15,
+        Font = Enum.Font.GothamBold,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 16, 0, 0),
+        Size = UDim2.new(0.6, 0, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 3,
+        Parent = topbar,
+    })
+    self._TitleLabel = titleLabel
+
+    -- Author
+    if self.Author ~= "" then
+        Utility.Create("TextLabel", {
+            Text = self.Author,
+            TextColor3 = self.Theme.TextSub,
+            TextSize = 11,
+            Font = Enum.Font.Gotham,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 16, 0, 24),
+            Size = UDim2.new(0.5, 0, 0, 16),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ZIndex = 3,
+            Parent = topbar,
+        })
+    end
+
+    -- Theme switcher button (top right)
+    local themeBtn = Utility.Create("TextButton", {
+        Text = "🎨",
+        TextSize = 16,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, 30, 0, 30),
+        Position = UDim2.new(1, -80, 0, 7),
+        ZIndex = 4,
+        Parent = topbar,
+    })
+
+    -- Minimize button
+    local minBtn = Utility.Create("TextButton", {
+        Text = "─",
+        TextColor3 = self.Theme.TextSub,
+        TextSize = 14,
+        Font = Enum.Font.GothamBold,
+        BackgroundColor3 = self.Theme.SurfaceAlt,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 26, 0, 26),
+        Position = UDim2.new(1, -60, 0, 9),
+        ZIndex = 4,
+        Parent = topbar,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = minBtn })
+
+    -- Close button
+    local closeBtn = Utility.Create("TextButton", {
+        Text = "✕",
+        TextColor3 = self.Theme.Red,
+        TextSize = 12,
+        Font = Enum.Font.GothamBold,
+        BackgroundColor3 = self.Theme.SurfaceAlt,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 26, 0, 26),
+        Position = UDim2.new(1, -30, 0, 9),
+        ZIndex = 4,
+        Parent = topbar,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = closeBtn })
+
+    -- Body
+    local body = Utility.Create("Frame", {
+        Name = "Body",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 44),
+        Size = UDim2.new(1, 0, 1, -44),
+        ZIndex = 2,
+        Parent = window,
+    })
+
+    -- Sidebar
+    local sidebar = Utility.Create("ScrollingFrame", {
+        Name = "Sidebar",
+        BackgroundColor3 = self.Theme.Surface,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(0, 170, 1, 0),
+        ScrollBarThickness = 0,
+        ScrollingDirection = Enum.ScrollingDirection.Y,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y,
+        ZIndex = 2,
+        Parent = body,
+    })
+
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, 0), Parent = sidebar })
+
+    -- Fix top corner of sidebar
+    Utility.Create("Frame", {
+        BackgroundColor3 = self.Theme.Surface,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 1),
+        ZIndex = 2,
+        Parent = sidebar,
+    })
+
+    local sidebarList = Utility.Create("Frame", {
+        Name = "List",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        ZIndex = 3,
+        Parent = sidebar,
+    })
+    Utility.Create("UIListLayout", {
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 2),
+        Parent = sidebarList,
+    })
+    Utility.Create("UIPadding", {
+        PaddingTop = UDim.new(0, 8),
+        PaddingLeft = UDim.new(0, 8),
+        PaddingRight = UDim.new(0, 8),
+        Parent = sidebarList,
+    })
+
+    self._SidebarList = sidebarList
+
+    -- Content area
+    local content = Utility.Create("Frame", {
+        Name = "Content",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 170, 0, 0),
+        Size = UDim2.new(1, -170, 1, 0),
+        ZIndex = 2,
+        Parent = body,
+    })
+    self._Content = content
+
+    -- Separator line
+    Utility.Create("Frame", {
+        BackgroundColor3 = self.Theme.Border,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 170, 0, 0),
+        Size = UDim2.new(0, 1, 1, 0),
+        ZIndex = 3,
+        Parent = body,
+    })
+
+    -- Draggable
+    Utility.MakeDraggable(window, topbar)
+    Utility.MakeDraggable(shadow, topbar)
+
+    -- Theme dropdown (popup)
+    local themePopup = nil
+    themeBtn.MouseButton1Click:Connect(function()
+        if themePopup then
+            themePopup:Destroy()
+            themePopup = nil
+            return
+        end
+
+        themePopup = Utility.Create("Frame", {
+            BackgroundColor3 = self.Theme.Surface,
+            BorderSizePixel = 0,
+            Position = UDim2.new(1, -160, 1, 4),
+            Size = UDim2.new(0, 150, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
+            ZIndex = 100,
+            Parent = topbar,
+        })
+        Utility.Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = themePopup })
+        Utility.Create("UIStroke", { Color = self.Theme.Border, Parent = themePopup })
+        Utility.Create("UIPadding", {
+            PaddingTop = UDim.new(0,6), PaddingBottom = UDim.new(0,6),
+            PaddingLeft = UDim.new(0,6), PaddingRight = UDim.new(0,6),
+            Parent = themePopup,
+        })
+        Utility.Create("UIListLayout", {
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            Padding = UDim.new(0,2),
+            Parent = themePopup,
+        })
+
+        for themeName, themeData in pairs(OlympusUI.Themes) do
+            local btn = Utility.Create("TextButton", {
+                Text = themeName,
+                TextColor3 = themeData.Accent,
+                TextSize = 13,
+                Font = Enum.Font.GothamSemibold,
+                BackgroundColor3 = themeData.SurfaceAlt,
+                BorderSizePixel = 0,
+                Size = UDim2.new(1, 0, 0, 28),
+                ZIndex = 101,
+                Parent = themePopup,
+            })
+            Utility.Create("UICorner", { CornerRadius = UDim.new(0,6), Parent = btn })
+
+            btn.MouseButton1Click:Connect(function()
+                self.ThemeName = themeName
+                self.Theme = OlympusUI.Themes[themeName]
+                themePopup:Destroy()
+                themePopup = nil
+                -- Rebuild window with new theme (simple re-color)
+                self:_ApplyTheme()
+            end)
+        end
+    end)
+
+    -- Minimize
+    local minimized = false
+    minBtn.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        if minimized then
+            Utility.Tween(window, { Size = UDim2.fromOffset(self.Size.X.Offset, 44) }, 0.3)
+            Utility.Tween(shadow, { Size = UDim2.fromOffset(self.Size.X.Offset + 40, 84) }, 0.3)
+        else
+            Utility.Tween(window, { Size = self.Size }, 0.3)
+            Utility.Tween(shadow, { Size = UDim2.fromOffset(self.Size.X.Offset + 40, self.Size.Y.Offset + 40) }, 0.3)
+        end
+    end)
+
+    -- Close
+    closeBtn.MouseButton1Click:Connect(function()
+        Utility.Tween(window, { Size = UDim2.fromOffset(self.Size.X.Offset, 0) }, 0.2)
+        task.wait(0.22)
+        gui:Destroy()
+    end)
+
+    -- Toggle key
+    UserInputService.InputBegan:Connect(function(input, processed)
+        if processed then return end
+        if input.KeyCode == self._ToggleKey then
+            self._Open = not self._Open
+            window.Visible = self._Open
+            shadow.Visible = self._Open
+        end
+    end)
+
+    table.insert(OlympusUI.Windows, self)
+    return self
+end
+
+-- Apply theme colors to all elements
+function OlympusUI:_ApplyTheme()
+    local t = self.Theme
+    if not self._Window then return end
+    self._Window.BackgroundColor3 = t.Background
+    -- Re-color is complex for full rebuild; just notify user
+    self:Notify({
+        Title = "Theme Changed",
+        Content = "Switched to " .. self.ThemeName .. " theme. Reload for full effect.",
+        Duration = 3,
+        Theme = self.ThemeName,
+    })
+end
+
+function OlympusUI:SetToggleKey(key)
+    self._ToggleKey = key
+end
+
+-- ============================================================
+-- TAG
+-- ============================================================
+function OlympusUI:Tag(options)
+    options = options or {}
+    local topbar = self._Window and self._Window:FindFirstChild("Topbar")
+    if not topbar then return end
+
+    local tag = Utility.Create("Frame", {
+        BackgroundColor3 = options.Color or self.Theme.SurfaceAlt,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 0, 0, 20),
+        AutomaticSize = Enum.AutomaticSize.X,
+        Position = UDim2.new(0, 16, 1, -28),
+        ZIndex = 5,
+        Parent = topbar,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, options.Radius or 4), Parent = tag })
+    Utility.Create("UIPadding", {
+        PaddingLeft = UDim.new(0,6), PaddingRight = UDim.new(0,6),
+        Parent = tag,
+    })
+    Utility.Create("TextLabel", {
+        Text = options.Title or "",
+        TextColor3 = self.Theme.Text,
+        TextSize = 10,
+        Font = Enum.Font.GothamSemibold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, 0, 1, 0),
+        AutomaticSize = Enum.AutomaticSize.X,
+        ZIndex = 6,
+        Parent = tag,
+    })
+end
+
+-- ============================================================
+-- TAB
+-- ============================================================
+function OlympusUI:Tab(options)
+    options = options or {}
+
+    local tabData = {
+        Title    = options.Title or "Tab",
+        Icon     = options.Icon or "",
+        Badge    = options.Badge or nil,
+        _Elements = {},
+        _Window  = self,
+    }
+
+    local theme = self.Theme
+
+    -- Sidebar button
+    local tabBtn = Utility.Create("TextButton", {
+        Name = "Tab_" .. tabData.Title,
+        Text = "",
+        BackgroundColor3 = theme.SurfaceAlt,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 34),
+        ZIndex = 4,
+        LayoutOrder = #self._Tabs + 1,
+        Parent = self._SidebarList,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = tabBtn })
+
+    local tabLabel = Utility.Create("TextLabel", {
+        Text = tabData.Title,
+        TextColor3 = theme.TextSub,
+        TextSize = 13,
+        Font = Enum.Font.GothamSemibold,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 10, 0, 0),
+        Size = UDim2.new(1, -20, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 5,
+        Parent = tabBtn,
+    })
+
+    -- Badge
+    if tabData.Badge then
+        local badge = Utility.Create("TextLabel", {
+            Text = tabData.Badge,
+            TextColor3 = Color3.fromHex("#ffffff"),
+            TextSize = 9,
+            Font = Enum.Font.GothamBold,
+            BackgroundColor3 = theme.Accent,
+            BorderSizePixel = 0,
+            Size = UDim2.new(0, 0, 0, 16),
+            AutomaticSize = Enum.AutomaticSize.X,
+            Position = UDim2.new(1, -8, 0.5, -8),
+            AnchorPoint = Vector2.new(1, 0.5),
+            ZIndex = 6,
+            Parent = tabBtn,
+        })
+        Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = badge })
+        Utility.Create("UIPadding", {
+            PaddingLeft = UDim.new(0,4), PaddingRight = UDim.new(0,4),
+            Parent = badge,
+        })
+    end
+
+    -- Content page (ScrollingFrame)
+    local page = Utility.Create("ScrollingFrame", {
+        Name = "Page_" .. tabData.Title,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 1, 0),
+        ScrollBarThickness = 3,
+        ScrollBarImageColor3 = theme.Border,
+        ScrollingDirection = Enum.ScrollingDirection.Y,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y,
+        Visible = false,
+        ZIndex = 3,
+        Parent = self._Content,
+    })
+
+    local pageList = Utility.Create("Frame", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        Parent = page,
+    })
+    Utility.Create("UIListLayout", {
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 6),
+        Parent = pageList,
+    })
+    Utility.Create("UIPadding", {
+        PaddingTop = UDim.new(0,12),
+        PaddingLeft = UDim.new(0,12),
+        PaddingRight = UDim.new(0,12),
+        PaddingBottom = UDim.new(0,12),
+        Parent = pageList,
+    })
+
+    tabData._Btn      = tabBtn
+    tabData._Label    = tabLabel
+    tabData._Page     = page
+    tabData._PageList = pageList
+
+    -- Click handler
+    tabBtn.MouseButton1Click:Connect(function()
+        self:_SelectTab(tabData)
+    end)
+
+    -- Hover
+    tabBtn.MouseEnter:Connect(function()
+        if self._ActiveTab ~= tabData then
+            Utility.Tween(tabBtn, { BackgroundTransparency = 0.85 }, 0.15)
+        end
+    end)
+    tabBtn.MouseLeave:Connect(function()
+        if self._ActiveTab ~= tabData then
+            Utility.Tween(tabBtn, { BackgroundTransparency = 1 }, 0.15)
+        end
+    end)
+
+    table.insert(self._Tabs, tabData)
+
+    -- Auto-select first tab
+    if #self._Tabs == 1 then
+        self:_SelectTab(tabData)
+    end
+
+    -- Return element API
+    local TabAPI = {}
+    TabAPI._data = tabData
+    TabAPI._window = self
+
+    function TabAPI:Section(opts) return self._window:_AddSection(tabData._PageList, opts, self._window) end
+    function TabAPI:Button(opts) return self._window:_AddButton(tabData._PageList, opts) end
+    function TabAPI:Toggle(opts) return self._window:_AddToggle(tabData._PageList, opts) end
+    function TabAPI:Slider(opts) return self._window:_AddSlider(tabData._PageList, opts) end
+    function TabAPI:Input(opts) return self._window:_AddInput(tabData._PageList, opts) end
+    function TabAPI:Dropdown(opts) return self._window:_AddDropdown(tabData._PageList, opts) end
+    function TabAPI:Colorpicker(opts) return self._window:_AddColorpicker(tabData._PageList, opts) end
+    function TabAPI:ProgressBar(opts) return self._window:_AddProgressBar(tabData._PageList, opts) end
+    function TabAPI:Paragraph(opts) return self._window:_AddParagraph(tabData._PageList, opts) end
+    function TabAPI:Divider() return self._window:_AddDivider(tabData._PageList) end
+    function TabAPI:Space() return self._window:_AddSpace(tabData._PageList) end
+    function TabAPI:Keybind(opts) return self._window:_AddKeybind(tabData._PageList, opts) end
+
+    return TabAPI
+end
+
+function OlympusUI:_SelectTab(tabData)
+    -- Deselect all
+    for _, t in ipairs(self._Tabs) do
+        t._Page.Visible = false
+        Utility.Tween(t._Btn, { BackgroundTransparency = 1 }, 0.15)
+        Utility.Tween(t._Label, { TextColor3 = self.Theme.TextSub }, 0.15)
+    end
+
+    -- Select target
+    tabData._Page.Visible = true
+    Utility.Tween(tabData._Btn, { BackgroundTransparency = 0, BackgroundColor3 = self.Theme.Accent }, 0.15)
+    Utility.Tween(tabData._Label, { TextColor3 = Color3.fromHex("#ffffff") }, 0.15)
+    self._ActiveTab = tabData
+end
+
+-- ============================================================
+-- ELEMENTS
+-- ============================================================
+
+-- SECTION
+function OlympusUI:_AddSection(parent, options, win)
+    options = options or {}
+    local theme = self.Theme
+
+    local sectionFrame = Utility.Create("Frame", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        Parent = parent,
+    })
+
+    if options.Title then
+        Utility.Create("TextLabel", {
+            Text = options.Title,
+            TextColor3 = options.Color or theme.TextSub,
+            TextSize = options.TextSize or 12,
+            Font = Enum.Font.GothamSemibold,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 20),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = sectionFrame,
+        })
+    end
+
+    local innerList = Utility.Create("Frame", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        Position = UDim2.new(0, 0, 0, options.Title and 22 or 0),
+        Parent = sectionFrame,
+    })
+    Utility.Create("UIListLayout", {
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 5),
+        Parent = innerList,
+    })
+
+    local SectionAPI = {}
+    SectionAPI._list = innerList
+    SectionAPI._win  = self
+
+    function SectionAPI:Button(opts) return self._win:_AddButton(self._list, opts) end
+    function SectionAPI:Toggle(opts) return self._win:_AddToggle(self._list, opts) end
+    function SectionAPI:Slider(opts) return self._win:_AddSlider(self._list, opts) end
+    function SectionAPI:Input(opts) return self._win:_AddInput(self._list, opts) end
+    function SectionAPI:Dropdown(opts) return self._win:_AddDropdown(self._list, opts) end
+    function SectionAPI:Colorpicker(opts) return self._win:_AddColorpicker(self._list, opts) end
+    function SectionAPI:ProgressBar(opts) return self._win:_AddProgressBar(self._list, opts) end
+    function SectionAPI:Paragraph(opts) return self._win:_AddParagraph(self._list, opts) end
+    function SectionAPI:Divider() return self._win:_AddDivider(self._list) end
+    function SectionAPI:Space() return self._win:_AddSpace(self._list) end
+
+    return SectionAPI
+end
+
+-- ELEMENT CONTAINER
+local function MakeElementFrame(parent, theme, height)
+    local frame = Utility.Create("Frame", {
+        BackgroundColor3 = theme.Surface,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, height or 42),
+        AutomaticSize = height and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
+        ZIndex = 3,
+        Parent = parent,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = frame })
+    Utility.Create("UIPadding", {
+        PaddingLeft = UDim.new(0,12), PaddingRight = UDim.new(0,12),
+        PaddingTop = UDim.new(0,8), PaddingBottom = UDim.new(0,8),
+        Parent = frame,
+    })
+    return frame
+end
+
+-- BUTTON
+function OlympusUI:_AddButton(parent, options)
+    options = options or {}
+    local theme = self.Theme
+
+    local frame = MakeElementFrame(parent, theme, 42)
+    local color = options.Color or theme.Accent
+
+    Utility.Create("UIStroke", {
+        Color = theme.Border,
+        Thickness = 1,
+        Parent = frame,
+    })
+
+    local btn = Utility.Create("TextButton", {
+        Text = options.Title or "Button",
+        TextColor3 = color,
+        TextSize = 13,
+        Font = Enum.Font.GothamSemibold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = 4,
+        Parent = frame,
+    })
+
+    if options.Desc then
+        frame.Size = UDim2.new(1, 0, 0, 58)
+        btn.Size = UDim2.new(1, 0, 0, 20)
+        btn.Position = UDim2.new(0, 0, 0, 0)
+        btn.TextXAlignment = Enum.TextXAlignment.Left
+
+        Utility.Create("TextLabel", {
+            Text = options.Desc,
+            TextColor3 = theme.TextSub,
+            TextSize = 11,
+            Font = Enum.Font.Gotham,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 0, 0, 22),
+            Size = UDim2.new(1, 0, 0, 16),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ZIndex = 4,
+            Parent = frame,
+        })
+    end
+
+    -- Hover/click effect
+    btn.MouseEnter:Connect(function()
+        Utility.Tween(frame, { BackgroundColor3 = theme.SurfaceAlt }, 0.15)
+    end)
+    btn.MouseLeave:Connect(function()
+        Utility.Tween(frame, { BackgroundColor3 = theme.Surface }, 0.15)
+    end)
+    btn.MouseButton1Down:Connect(function()
+        Utility.Tween(frame, { BackgroundColor3 = theme.Border }, 0.1)
+    end)
+    btn.MouseButton1Up:Connect(function()
+        Utility.Tween(frame, { BackgroundColor3 = theme.Surface }, 0.15)
+        if options.Callback then pcall(options.Callback) end
+    end)
+
+    local BtnAPI = {}
+    function BtnAPI:Highlight()
+        Utility.Tween(frame, { BackgroundColor3 = theme.Accent }, 0.1)
+        task.delay(0.3, function()
+            Utility.Tween(frame, { BackgroundColor3 = theme.Surface }, 0.3)
+        end)
+    end
+    function BtnAPI:SetTitle(t) btn.Text = t end
+
+    return BtnAPI
+end
+
+-- TOGGLE
+function OlympusUI:_AddToggle(parent, options)
+    options = options or {}
+    local theme = self.Theme
+
+    local frame = MakeElementFrame(parent, theme, 42)
+    Utility.Create("UIStroke", { Color = theme.Border, Thickness = 1, Parent = frame })
+
+    local value = options.Value or false
+    local isCheckbox = options.Type == "Checkbox"
+
+    Utility.Create("TextLabel", {
+        Text = options.Title or "Toggle",
+        TextColor3 = theme.Text,
+        TextSize = 13,
+        Font = Enum.Font.GothamSemibold,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(0.7, 0, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 4,
+        Parent = frame,
+    })
+
+    local toggleHolder, toggleCircle, checkMark
+
+    if isCheckbox then
+        toggleHolder = Utility.Create("Frame", {
+            BackgroundColor3 = value and theme.Toggle or theme.ToggleOff,
+            BorderSizePixel = 0,
+            Size = UDim2.new(0, 20, 0, 20),
+            Position = UDim2.new(1, -20, 0.5, -10),
+            ZIndex = 4,
+            Parent = frame,
+        })
+        Utility.Create("UICorner", { CornerRadius = UDim.new(0,5), Parent = toggleHolder })
+        Utility.Create("UIStroke", { Color = theme.Border, Parent = toggleHolder })
+
+        checkMark = Utility.Create("TextLabel", {
+            Text = "✓",
+            TextColor3 = Color3.fromHex("#ffffff"),
+            TextSize = 14,
+            Font = Enum.Font.GothamBold,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1,0,1,0),
+            TextXAlignment = Enum.TextXAlignment.Center,
+            ZIndex = 5,
+            Visible = value,
+            Parent = toggleHolder,
+        })
+    else
+        toggleHolder = Utility.Create("Frame", {
+            BackgroundColor3 = value and theme.Toggle or theme.ToggleOff,
+            BorderSizePixel = 0,
+            Size = UDim2.new(0, 40, 0, 22),
+            Position = UDim2.new(1, -40, 0.5, -11),
+            ZIndex = 4,
+            Parent = frame,
+        })
+        Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = toggleHolder })
+
+        toggleCircle = Utility.Create("Frame", {
+            BackgroundColor3 = Color3.fromHex("#ffffff"),
+            BorderSizePixel = 0,
+            Size = UDim2.new(0, 16, 0, 16),
+            Position = value and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8),
+            ZIndex = 5,
+            Parent = toggleHolder,
+        })
+        Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = toggleCircle })
+    end
+
+    if options.Desc then
+        frame.Size = UDim2.new(1,0,0,58)
+        Utility.Create("TextLabel", {
+            Text = options.Desc,
+            TextColor3 = theme.TextSub,
+            TextSize = 11,
+            Font = Enum.Font.Gotham,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0,0,0,24),
+            Size = UDim2.new(0.7,0,0,16),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ZIndex = 4,
+            Parent = frame,
+        })
+    end
+
+    local function setToggle(v, noCallback)
+        value = v
+        if isCheckbox then
+            Utility.Tween(toggleHolder, { BackgroundColor3 = v and theme.Toggle or theme.ToggleOff }, 0.15)
+            checkMark.Visible = v
+        else
+            Utility.Tween(toggleHolder, { BackgroundColor3 = v and theme.Toggle or theme.ToggleOff }, 0.15)
+            Utility.Tween(toggleCircle, {
+                Position = v and UDim2.new(1,-19,0.5,-8) or UDim2.new(0,3,0.5,-8)
+            }, 0.15)
+        end
+        if not noCallback and options.Callback then
+            pcall(options.Callback, v)
+        end
+        if options.Flag then
+            self._Flags[options.Flag] = v
+        end
+    end
+
+    local clickArea = Utility.Create("TextButton", {
+        Text = "", BackgroundTransparency = 1,
+        Size = UDim2.new(1,0,1,0),
+        ZIndex = 6, Parent = frame,
+    })
+    clickArea.MouseButton1Click:Connect(function()
+        setToggle(not value)
+    end)
+
+    local ToggleAPI = {}
+    function ToggleAPI:Set(v) setToggle(v, true) end
+    function ToggleAPI:Get() return value end
+
+    return ToggleAPI
+end
+
+-- SLIDER
+function OlympusUI:_AddSlider(parent, options)
+    options = options or {}
+    local theme = self.Theme
+    local valConfig = options.Value or { Min = 0, Max = 100, Default = 50 }
+
+    local minVal = valConfig.Min or 0
+    local maxVal = valConfig.Max or 100
+    local defVal = valConfig.Default or minVal
+    local step   = options.Step or 1
+    local currentVal = defVal
+
+    local frame = MakeElementFrame(parent, theme, options.Desc and 70 or 58)
+    Utility.Create("UIStroke", { Color = theme.Border, Thickness = 1, Parent = frame })
+
+    Utility.Create("TextLabel", {
+        Text = options.Title or "Slider",
+        TextColor3 = theme.Text,
+        TextSize = 13,
+        Font = Enum.Font.GothamSemibold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.6, 0, 0, 18),
+        Position = UDim2.new(0,0,0,0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 4,
+        Parent = frame,
+    })
+
+    local valueLabel = Utility.Create("TextLabel", {
+        Text = tostring(currentVal),
+        TextColor3 = theme.Accent,
+        TextSize = 13,
+        Font = Enum.Font.GothamBold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.4, 0, 0, 18),
+        Position = UDim2.new(0.6,0,0,0),
+        TextXAlignment = Enum.TextXAlignment.Right,
+        ZIndex = 4,
+        Parent = frame,
+    })
+
+    if options.Desc then
+        Utility.Create("TextLabel", {
+            Text = options.Desc,
+            TextColor3 = theme.TextSub,
+            TextSize = 11,
+            Font = Enum.Font.Gotham,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1,0,0,14),
+            Position = UDim2.new(0,0,0,20),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ZIndex = 4,
+            Parent = frame,
+        })
+    end
+
+    local trackY = options.Desc and 40 or 28
+    local track = Utility.Create("Frame", {
+        BackgroundColor3 = theme.Border,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, trackY),
+        Size = UDim2.new(1, 0, 0, 6),
+        ZIndex = 4,
+        Parent = frame,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = track })
+
+    local fill = Utility.Create("Frame", {
+        BackgroundColor3 = theme.Slider,
+        BorderSizePixel = 0,
+        Size = UDim2.new((defVal - minVal) / (maxVal - minVal), 0, 1, 0),
+        ZIndex = 5,
+        Parent = track,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = fill })
+
+    local thumb = Utility.Create("Frame", {
+        BackgroundColor3 = Color3.fromHex("#ffffff"),
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 14, 0, 14),
+        Position = UDim2.new((defVal - minVal) / (maxVal - minVal), -7, 0.5, -7),
+        ZIndex = 6,
+        Parent = track,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = thumb })
+
+    local tooltip = nil
+    if options.IsTooltip then
+        tooltip = Utility.Create("TextLabel", {
+            Text = tostring(defVal),
+            TextColor3 = Color3.fromHex("#ffffff"),
+            TextSize = 11,
+            Font = Enum.Font.GothamBold,
+            BackgroundColor3 = theme.Accent,
+            BorderSizePixel = 0,
+            Size = UDim2.new(0, 32, 0, 20),
+            AnchorPoint = Vector2.new(0.5, 1),
+            Position = UDim2.new((defVal - minVal) / (maxVal - minVal), 0, 0, -6),
+            ZIndex = 7,
+            Visible = false,
+            Parent = track,
+        })
+        Utility.Create("UICorner", { CornerRadius = UDim.new(0,4), Parent = tooltip })
+    end
+
+    -- Dragging
+    local dragging = false
+
+    local function updateSlider(absPos)
+        local trackAbsPos = track.AbsolutePosition.X
+        local trackAbsSize = track.AbsoluteSize.X
+        local ratio = math.clamp((absPos - trackAbsPos) / trackAbsSize, 0, 1)
+        local rawVal = minVal + (maxVal - minVal) * ratio
+        local snapped = math.floor(rawVal / step + 0.5) * step
+        snapped = math.clamp(snapped, minVal, maxVal)
+        currentVal = snapped
+
+        local displayRatio = (currentVal - minVal) / (maxVal - minVal)
+        fill.Size = UDim2.new(displayRatio, 0, 1, 0)
+        thumb.Position = UDim2.new(displayRatio, -7, 0.5, -7)
+        valueLabel.Text = tostring(currentVal)
+
+        if tooltip then
+            tooltip.Text = tostring(currentVal)
+            tooltip.Position = UDim2.new(displayRatio, 0, 0, -6)
+        end
+
+        if options.Callback then pcall(options.Callback, currentVal) end
+        if options.Flag then self._Flags[options.Flag] = currentVal end
+    end
+
+    track.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or
+           input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            if tooltip then tooltip.Visible = true end
+            updateSlider(input.Position.X)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or
+           input.UserInputType == Enum.UserInputType.Touch) then
+            updateSlider(input.Position.X)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or
+           input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+            if tooltip then tooltip.Visible = false end
+        end
+    end)
+
+    local SliderAPI = {}
+    function SliderAPI:Set(v)
+        currentVal = math.clamp(v, minVal, maxVal)
+        local r = (currentVal - minVal) / (maxVal - minVal)
+        fill.Size = UDim2.new(r, 0, 1, 0)
+        thumb.Position = UDim2.new(r, -7, 0.5, -7)
+        valueLabel.Text = tostring(currentVal)
+    end
+    function SliderAPI:Get() return currentVal end
+
+    return SliderAPI
+end
+
+-- INPUT
+function OlympusUI:_AddInput(parent, options)
+    options = options or {}
+    local theme = self.Theme
+    local isTextarea = options.Type == "Textarea"
+
+    local frame = MakeElementFrame(parent, theme, isTextarea and 80 or 58)
+    Utility.Create("UIStroke", { Color = theme.Border, Thickness = 1, Parent = frame })
+
+    if options.Title then
+        Utility.Create("TextLabel", {
+            Text = options.Title,
+            TextColor3 = theme.Text,
+            TextSize = 13,
+            Font = Enum.Font.GothamSemibold,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 18),
+            Position = UDim2.new(0,0,0,0),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ZIndex = 4,
+            Parent = frame,
+        })
+    end
+
+    local inputBg = Utility.Create("Frame", {
+        BackgroundColor3 = theme.SurfaceAlt,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, options.Title and 22 or 0),
+        Size = UDim2.new(1, 0, 0, isTextarea and 48 or 26),
+        ZIndex = 4,
+        Parent = frame,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = inputBg })
+    Utility.Create("UIStroke", { Color = theme.Border, Parent = inputBg })
+
+    local inputBox = Utility.Create("TextBox", {
+        Text = options.Default or options.Value or "",
+        PlaceholderText = options.Placeholder or "Enter text...",
+        PlaceholderColor3 = theme.TextDim,
+        TextColor3 = theme.Text,
+        TextSize = 12,
+        Font = Enum.Font.Gotham,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 6, 0, 0),
+        Size = UDim2.new(1, -12, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = isTextarea and Enum.TextYAlignment.Top or Enum.TextYAlignment.Center,
+        ClearTextOnFocus = false,
+        MultiLine = isTextarea,
+        ZIndex = 5,
+        Parent = inputBg,
+    })
+
+    inputBg.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Utility.Tween(inputBg, { BackgroundColor3 = theme.Border }, 0.15)
+        end
+    end)
+    inputBg.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Utility.Tween(inputBg, { BackgroundColor3 = theme.SurfaceAlt }, 0.15)
+        end
+    end)
+
+    inputBox.FocusLost:Connect(function(enterPressed)
+        if options.Callback then pcall(options.Callback, inputBox.Text) end
+        if options.Flag then self._Flags[options.Flag] = inputBox.Text end
+    end)
+
+    local InputAPI = {}
+    function InputAPI:Set(v) inputBox.Text = v end
+    function InputAPI:Get() return inputBox.Text end
+
+    return InputAPI
+end
+
+-- DROPDOWN
+function OlympusUI:_AddDropdown(parent, options)
+    options = options or {}
+    local theme = self.Theme
+    local values = options.Values or {}
+    local multi = options.Multi or false
+    local selected = {}
+
+    if options.Value then
+        if type(options.Value) == "table" then
+            for _, v in ipairs(options.Value) do selected[v] = true end
+        else
+            selected[options.Value] = true
+        end
+    end
+
+    local open = false
+
+    local frame = Utility.Create("Frame", {
+        BackgroundColor3 = theme.Surface,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        ZIndex = 10,
+        Parent = parent,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = frame })
+    Utility.Create("UIStroke", { Color = theme.Border, Thickness = 1, Parent = frame })
+
+    local header = Utility.Create("Frame", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 42),
+        ZIndex = 11,
+        Parent = frame,
+    })
+    Utility.Create("UIPadding", {
+        PaddingLeft = UDim.new(0,12), PaddingRight = UDim.new(0,12),
+        PaddingTop = UDim.new(0,8), PaddingBottom = UDim.new(0,8),
+        Parent = header,
+    })
+
+    Utility.Create("TextLabel", {
+        Text = options.Title or "Dropdown",
+        TextColor3 = theme.Text,
+        TextSize = 13,
+        Font = Enum.Font.GothamSemibold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.7, 0, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 12,
+        Parent = header,
+    })
+
+    local arrow = Utility.Create("TextLabel", {
+        Text = "▾",
+        TextColor3 = theme.TextSub,
+        TextSize = 14,
+        Font = Enum.Font.GothamBold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, 20, 1, 0),
+        Position = UDim2.new(1, -20, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Center,
+        ZIndex = 12,
+        Parent = header,
+    })
+
+    local selectedLabel = Utility.Create("TextLabel", {
+        Text = "None",
+        TextColor3 = theme.Accent,
+        TextSize = 11,
+        Font = Enum.Font.Gotham,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.55, 0, 1, 0),
+        Position = UDim2.new(0.4, 0, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Right,
+        ZIndex = 12,
+        Parent = header,
+    })
+
+    -- List container
+    local listContainer = Utility.Create("ScrollingFrame", {
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 0),
+        Position = UDim2.new(0, 0, 0, 42),
+        ScrollBarThickness = 2,
+        ScrollBarImageColor3 = theme.Border,
+        CanvasSize = UDim2.new(0,0,0,0),
+        AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y,
+        ClipsDescendants = true,
+        ZIndex = 12,
+        Visible = false,
+        Parent = frame,
+    })
+    Utility.Create("UIPadding", {
+        PaddingLeft = UDim.new(0,8), PaddingRight = UDim.new(0,8),
+        PaddingBottom = UDim.new(0,6),
+        Parent = listContainer,
+    })
+    Utility.Create("UIListLayout", {
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0,3),
+        Parent = listContainer,
+    })
+
+    local function updateSelectedLabel()
+        local parts = {}
+        for v, _ in pairs(selected) do
+            table.insert(parts, tostring(type(v)=="table" and v.Title or v))
+        end
+        selectedLabel.Text = #parts > 0 and table.concat(parts, ", ") or "None"
+    end
+
+    local function refreshItems()
+        for _, c in ipairs(listContainer:GetChildren()) do
+            if c:IsA("TextButton") or c:IsA("Frame") then c:Destroy() end
+        end
+
+        for _, val in ipairs(values) do
+            local isAdvanced = type(val) == "table" and val.Title
+            local displayText = isAdvanced and val.Title or tostring(val)
+            local isDivider = isAdvanced and val.Type == "Divider"
+
+            if isDivider then
+                local div = Utility.Create("Frame", {
+                    BackgroundColor3 = theme.Border,
+                    BorderSizePixel = 0,
+                    Size = UDim2.new(1, 0, 0, 1),
+                    ZIndex = 13,
+                    Parent = listContainer,
+                })
+            else
+                local key = isAdvanced and val.Title or val
+                local itemBtn = Utility.Create("TextButton", {
+                    Text = displayText,
+                    TextColor3 = selected[key] and theme.Accent or theme.Text,
+                    TextSize = 12,
+                    Font = Enum.Font.GothamSemibold,
+                    BackgroundColor3 = selected[key] and theme.SurfaceAlt or theme.Surface,
+                    BorderSizePixel = 0,
+                    Size = UDim2.new(1, 0, 0, 28),
+                    ZIndex = 13,
+                    Parent = listContainer,
+                })
+                Utility.Create("UICorner", { CornerRadius = UDim.new(0,6), Parent = itemBtn })
+
+                itemBtn.MouseButton1Click:Connect(function()
+                    if multi then
+                        if selected[key] then
+                            selected[key] = nil
+                        else
+                            selected[key] = true
+                        end
+                    else
+                        selected = {}
+                        selected[key] = true
+                    end
+                    updateSelectedLabel()
+                    refreshItems()
+
+                    if options.Callback then
+                        if multi then
+                            local t = {}
+                            for k,_ in pairs(selected) do table.insert(t, k) end
+                            pcall(options.Callback, t)
+                        else
+                            pcall(options.Callback, isAdvanced and val or key)
+                        end
+                    end
+                    if options.Flag then
+                        if multi then
+                            local t = {}
+                            for k,_ in pairs(selected) do table.insert(t, k) end
+                            self._Flags[options.Flag] = t
+                        else
+                            self._Flags[options.Flag] = key
+                        end
+                    end
+
+                    if not multi then
+                        open = false
+                        Utility.Tween(listContainer, { Size = UDim2.new(1,0,0,0) }, 0.2)
+                        task.wait(0.2)
+                        listContainer.Visible = false
+                    end
+                end)
+
+                itemBtn.MouseEnter:Connect(function()
+                    if not selected[key] then
+                        Utility.Tween(itemBtn, { BackgroundColor3 = theme.SurfaceAlt }, 0.1)
+                    end
+                end)
+                itemBtn.MouseLeave:Connect(function()
+                    if not selected[key] then
+                        Utility.Tween(itemBtn, { BackgroundColor3 = theme.Surface }, 0.1)
+                    end
+                end)
+            end
+        end
+    end
+
+    refreshItems()
+    updateSelectedLabel()
+
+    -- Toggle open
+    local headerBtn = Utility.Create("TextButton", {
+        Text = "", BackgroundTransparency = 1,
+        Size = UDim2.new(1,0,0,42),
+        ZIndex = 14,
+        Parent = frame,
+    })
+
+    headerBtn.MouseButton1Click:Connect(function()
+        open = not open
+        if open then
+            listContainer.Visible = true
+            local itemCount = math.min(#values, 6)
+            local targetHeight = itemCount * 31 + 6
+            Utility.Tween(listContainer, { Size = UDim2.new(1,0,0,targetHeight) }, 0.2)
+            Utility.Tween(arrow, { Rotation = 180 }, 0.2)
+        else
+            Utility.Tween(listContainer, { Size = UDim2.new(1,0,0,0) }, 0.2)
+            Utility.Tween(arrow, { Rotation = 0 }, 0.2)
+            task.wait(0.2)
+            listContainer.Visible = false
+        end
+    end)
+
+    local DropAPI = {}
+    function DropAPI:Refresh(newValues)
+        values = newValues
+        refreshItems()
+        updateSelectedLabel()
+    end
+    function DropAPI:Select(v)
+        selected = {}
+        if type(v) == "table" then
+            for _, k in ipairs(v) do selected[k] = true end
+        else
+            selected[v] = true
+        end
+        updateSelectedLabel()
+        refreshItems()
+    end
+    function DropAPI:Get() return selected end
+
+    return DropAPI
+end
+
+-- COLORPICKER
+function OlympusUI:_AddColorpicker(parent, options)
+    options = options or {}
+    local theme = self.Theme
+    local currentColor = options.Default or Color3.fromHex("#ff3131")
+    local open = false
+
+    local frame = Utility.Create("Frame", {
+        BackgroundColor3 = theme.Surface,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 42),
+        ZIndex = 8,
+        Parent = parent,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = frame })
+    Utility.Create("UIStroke", { Color = theme.Border, Thickness = 1, Parent = frame })
+    Utility.Create("UIPadding", {
+        PaddingLeft = UDim.new(0,12), PaddingRight = UDim.new(0,12),
+        PaddingTop = UDim.new(0,8), PaddingBottom = UDim.new(0,8),
+        Parent = frame,
+    })
+
+    Utility.Create("TextLabel", {
+        Text = options.Title or "Color",
+        TextColor3 = theme.Text,
+        TextSize = 13,
+        Font = Enum.Font.GothamSemibold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.7, 0, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 9,
+        Parent = frame,
+    })
+
+    local colorPreview = Utility.Create("Frame", {
+        BackgroundColor3 = currentColor,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 26, 0, 26),
+        Position = UDim2.new(1, -26, 0.5, -13),
+        ZIndex = 9,
+        Parent = frame,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = colorPreview })
+    Utility.Create("UIStroke", { Color = theme.Border, Parent = colorPreview })
+
+    -- Color picker panel
+    local pickerPanel = Utility.Create("Frame", {
+        BackgroundColor3 = theme.SurfaceAlt,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 0),
+        Position = UDim2.new(0, 0, 1, 4),
+        ZIndex = 20,
+        Visible = false,
+        Parent = frame,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0,8), Parent = pickerPanel })
+    Utility.Create("UIStroke", { Color = theme.Border, Parent = pickerPanel })
+    Utility.Create("UIPadding", {
+        PaddingAll = UDim.new(0,8),
+        Parent = pickerPanel,
+    })
+
+    -- Hue slider
+    local hueFrame = Utility.Create("Frame", {
+        BackgroundColor3 = theme.Border,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 16),
+        Position = UDim2.new(0,0,0,4),
+        ZIndex = 21,
+        Parent = pickerPanel,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = hueFrame })
+
+    -- Hue gradient
+    local hueGrad = Utility.Create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromHSV(0,1,1)),
+            ColorSequenceKeypoint.new(0.166, Color3.fromHSV(0.166,1,1)),
+            ColorSequenceKeypoint.new(0.333, Color3.fromHSV(0.333,1,1)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5,1,1)),
+            ColorSequenceKeypoint.new(0.666, Color3.fromHSV(0.666,1,1)),
+            ColorSequenceKeypoint.new(0.833, Color3.fromHSV(0.833,1,1)),
+            ColorSequenceKeypoint.new(1, Color3.fromHSV(1,1,1)),
+        }),
+        Parent = hueFrame,
+    })
+
+    local hueH, hueS, hueV = Color3.toHSV(currentColor)
+
+    local hueThumb = Utility.Create("Frame", {
+        BackgroundColor3 = Color3.fromHex("#ffffff"),
+        BorderSizePixel = 0,
+        Size = UDim2.new(0,12,0,12),
+        Position = UDim2.new(hueH, -6, 0.5, -6),
+        ZIndex = 22,
+        Parent = hueFrame,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = hueThumb })
+
+    -- Hex input
+    local hexLabel = Utility.Create("TextLabel", {
+        Text = "HEX",
+        TextColor3 = theme.TextSub,
+        TextSize = 11,
+        Font = Enum.Font.GothamBold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0,30,0,24),
+        Position = UDim2.new(0,0,0,26),
+        ZIndex = 21,
+        Parent = pickerPanel,
+    })
+
+    local hexInput = Utility.Create("TextBox", {
+        Text = Utility.ColorToHex(currentColor),
+        PlaceholderText = "#FF0000",
+        PlaceholderColor3 = theme.TextDim,
+        TextColor3 = theme.Text,
+        TextSize = 12,
+        Font = Enum.Font.Code,
+        BackgroundColor3 = theme.Surface,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1,-38,0,24),
+        Position = UDim2.new(0,36,0,26),
+        ClearTextOnFocus = false,
+        ZIndex = 21,
+        Parent = pickerPanel,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0,4), Parent = hexInput })
+
+    pickerPanel.Size = UDim2.new(1,0,0,66)
+
+    local function setColor(c)
+        currentColor = c
+        colorPreview.BackgroundColor3 = c
+        hexInput.Text = Utility.ColorToHex(c)
+        local h,s,v = Color3.toHSV(c)
+        hueThumb.Position = UDim2.new(h,-6,0.5,-6)
+        if options.Callback then pcall(options.Callback, c) end
+        if options.Flag then self._Flags[options.Flag] = c end
+    end
+
+    -- Hue drag
+    local hueDragging = false
+    hueFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            hueDragging = true
+            local r = math.clamp((input.Position.X - hueFrame.AbsolutePosition.X) / hueFrame.AbsoluteSize.X, 0, 1)
+            local h2,s2,v2 = Color3.toHSV(currentColor)
+            setColor(Color3.fromHSV(r, s2 > 0 and s2 or 1, v2 > 0 and v2 or 1))
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if hueDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local r = math.clamp((input.Position.X - hueFrame.AbsolutePosition.X) / hueFrame.AbsoluteSize.X, 0, 1)
+            local h2,s2,v2 = Color3.toHSV(currentColor)
+            setColor(Color3.fromHSV(r, s2 > 0 and s2 or 1, v2 > 0 and v2 or 1))
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then hueDragging = false end
+    end)
+
+    hexInput.FocusLost:Connect(function()
+        local hex = hexInput.Text:gsub("#", "")
+        if #hex == 6 then
+            local r = tonumber("0x" .. hex:sub(1,2)) / 255
+            local g = tonumber("0x" .. hex:sub(3,4)) / 255
+            local b = tonumber("0x" .. hex:sub(5,6)) / 255
+            if r and g and b then
+                setColor(Color3.new(r,g,b))
+            end
+        end
+    end)
+
+    local clickBtn = Utility.Create("TextButton", {
+        Text="", BackgroundTransparency=1,
+        Size = UDim2.new(1,0,0,42),
+        ZIndex = 10,
+        Parent = frame,
+    })
+
+    clickBtn.MouseButton1Click:Connect(function()
+        open = not open
+        pickerPanel.Visible = open
+    end)
+
+    local ColorAPI = {}
+    function ColorAPI:Set(c) setColor(c) end
+    function ColorAPI:Get() return currentColor end
+
+    return ColorAPI
+end
+
+-- PROGRESS BAR
+function OlympusUI:_AddProgressBar(parent, options)
+    options = options or {}
+    local theme = self.Theme
+    local value = math.clamp(options.Value or 0, 0, 100)
+
+    local frame = MakeElementFrame(parent, theme, 50)
+    Utility.Create("UIStroke", { Color = theme.Border, Thickness = 1, Parent = frame })
+
+    if options.Title then
+        Utility.Create("TextLabel", {
+            Text = options.Title,
+            TextColor3 = theme.Text,
+            TextSize = 13,
+            Font = Enum.Font.GothamSemibold,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0.8, 0, 0, 18),
+            Position = UDim2.new(0,0,0,0),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ZIndex = 4,
+            Parent = frame,
+        })
+    end
+
+    local percentLabel = Utility.Create("TextLabel", {
+        Text = tostring(value) .. "%",
+        TextColor3 = theme.Accent,
+        TextSize = 12,
+        Font = Enum.Font.GothamBold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.2, 0, 0, 18),
+        Position = UDim2.new(0.8,0,0,0),
+        TextXAlignment = Enum.TextXAlignment.Right,
+        ZIndex = 4,
+        Parent = frame,
+    })
+
+    local track = Utility.Create("Frame", {
+        BackgroundColor3 = theme.Border,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 24),
+        Size = UDim2.new(1, 0, 0, 8),
+        ZIndex = 4,
+        Parent = frame,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = track })
+
+    local fill = Utility.Create("Frame", {
+        BackgroundColor3 = options.Color or theme.Accent,
+        BorderSizePixel = 0,
+        Size = UDim2.new(value / 100, 0, 1, 0),
+        ZIndex = 5,
+        Parent = track,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(1,0), Parent = fill })
+
+    local ProgressAPI = {}
+    function ProgressAPI:Set(v)
+        value = math.clamp(v, 0, 100)
+        Utility.Tween(fill, { Size = UDim2.new(value/100, 0, 1, 0) }, 0.3)
+        percentLabel.Text = tostring(math.floor(value)) .. "%"
+    end
+    function ProgressAPI:Get() return value end
+
+    return ProgressAPI
+end
+
+-- PARAGRAPH
+function OlympusUI:_AddParagraph(parent, options)
+    options = options or {}
+    local theme = self.Theme
+
+    local frame = MakeElementFrame(parent, theme, nil)
+    Utility.Create("UIStroke", { Color = theme.Border, Thickness = 1, Parent = frame })
+
+    if options.Title then
+        Utility.Create("TextLabel", {
+            Text = options.Title,
+            TextColor3 = theme.Text,
+            TextSize = options.TextSize or 14,
+            Font = Enum.Font.GothamBold,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1,0,0,0),
+            AutomaticSize = Enum.AutomaticSize.Y,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextWrapped = true,
+            ZIndex = 4,
+            Parent = frame,
+        })
+    end
+
+    local descLabel
+    if options.Desc then
+        descLabel = Utility.Create("TextLabel", {
+            Text = options.Desc,
+            TextColor3 = theme.TextSub,
+            TextSize = 12,
+            Font = Enum.Font.Gotham,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1,0,0,0),
+            AutomaticSize = Enum.AutomaticSize.Y,
+            Position = UDim2.new(0,0,0, options.Title and 22 or 0),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextWrapped = true,
+            ZIndex = 4,
+            Parent = frame,
+        })
+    end
+
+    local ParagraphAPI = {}
+    function ParagraphAPI:SetTitle(t)
+        for _, c in ipairs(frame:GetChildren()) do
+            if c:IsA("TextLabel") and c.Font == Enum.Font.GothamBold then
+                c.Text = t
+            end
+        end
+    end
+    function ParagraphAPI:SetDesc(d)
+        if descLabel then descLabel.Text = d end
+    end
+
+    return ParagraphAPI
+end
+
+-- DIVIDER
+function OlympusUI:_AddDivider(parent)
+    local theme = self.Theme
+    Utility.Create("Frame", {
+        BackgroundColor3 = theme.Border,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 1),
+        ZIndex = 4,
+        Parent = parent,
+    })
+end
+
+-- SPACE
+function OlympusUI:_AddSpace(parent)
+    Utility.Create("Frame", {
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 8),
+        Parent = parent,
+    })
+end
+
+-- KEYBIND
+function OlympusUI:_AddKeybind(parent, options)
+    options = options or {}
+    local theme = self.Theme
+    local currentKey = options.Value or "None"
+    local listening = false
+
+    local frame = MakeElementFrame(parent, theme, 42)
+    Utility.Create("UIStroke", { Color = theme.Border, Thickness = 1, Parent = frame })
+
+    Utility.Create("TextLabel", {
+        Text = options.Title or "Keybind",
+        TextColor3 = theme.Text,
+        TextSize = 13,
+        Font = Enum.Font.GothamSemibold,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.6, 0, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 4,
+        Parent = frame,
+    })
+
+    local keyLabel = Utility.Create("TextButton", {
+        Text = "[" .. currentKey .. "]",
+        TextColor3 = theme.Accent,
+        TextSize = 12,
+        Font = Enum.Font.GothamBold,
+        BackgroundColor3 = theme.SurfaceAlt,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 70, 0, 26),
+        Position = UDim2.new(1, -70, 0.5, -13),
+        ZIndex = 5,
+        Parent = frame,
+    })
+    Utility.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = keyLabel })
+
+    keyLabel.MouseButton1Click:Connect(function()
+        listening = true
+        keyLabel.Text = "..."
+        keyLabel.TextColor3 = theme.Yellow or Color3.fromHex("#ffcc00")
+    end)
+
+    UserInputService.InputBegan:Connect(function(input, processed)
+        if listening and not processed then
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                currentKey = tostring(input.KeyCode):gsub("Enum.KeyCode.", "")
+                keyLabel.Text = "[" .. currentKey .. "]"
+                keyLabel.TextColor3 = theme.Accent
+                listening = false
+                if options.Callback then pcall(options.Callback, currentKey) end
+                if options.Flag then self._Flags[options.Flag] = currentKey end
+            end
+        end
+    end)
+
+    local KeyAPI = {}
+    function KeyAPI:Set(v)
+        currentKey = v
+        keyLabel.Text = "[" .. v .. "]"
+    end
+    function KeyAPI:Get() return currentKey end
+
+    return KeyAPI
+end
+
+-- ============================================================
+-- EXECUTOR DETECTION
+-- ============================================================
+function OlympusUI:DetectExecutor()
+    local name = "Unknown"
+    if identifyexecutor then name = identifyexecutor()
+    elseif getexecutorname then name = getexecutorname()
+    elseif executor then name = tostring(executor) end
+
+    local colors = {
+        flux = "#30ff6a", delta = "#e74c3c", arceus = "#a03cff",
+        krampus = "#ff3838", oxygen = "#ff3838", volcano = "#ff8c00",
+        synapse = "#ffd700", krypton = "#ffd700", wave = "#00e5ff",
+        zenith = "#ff00ff", seliware = "#00ffa2", krnl = "#1e90ff",
+        trigon = "#ff007f", nihon = "#8a2be2", celery = "#4caf50",
+        lunar = "#8080ff", valyse = "#ff1493", vega = "#4682b4",
+        electron = "#7fffd4", awp = "#ff005e", bunni = "#ff69b4",
+    }
+
+    local color = Color3.fromHex("#aaaaaa")
+    for keyword, hex in pairs(colors) do
+        if name:lower():find(keyword) then
+            color = Color3.fromHex(hex)
+            break
+        end
+    end
+
+    return name, color
+end
+
+-- ============================================================
+-- DESTROY
+-- ============================================================
+function OlympusUI:Destroy()
+    if self._Gui then self._Gui:Destroy() end
+end
+
+-- ============================================================
+-- RETURN
+-- ============================================================
+return OlympusUI
+
