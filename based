@@ -1,0 +1,1417 @@
+--[[
+    ╔═══════════════════════════════════════════╗
+    ║           OlympusUI v1.0.0                ║
+    ║     Custom UI Library for Roblox          ║
+    ║     Based on WindUI by Footagesus         ║
+    ║     Modified & Extended by OlympusUI      ║
+    ╚═══════════════════════════════════════════╝
+
+    USAGE EXAMPLE:
+    
+    local OlympusUI = loadstring(game:HttpGet("YOUR_RAW_URL"))()
+    
+    local Window = OlympusUI:CreateWindow({
+        Title = "My Hub",
+        Theme = "Crimson",   -- Crimson | Midnight | Aurora | Sunset | Sakura | Default
+        Icon = "star",
+        Author = "YourName",
+        Folder = "MyHub",
+    })
+    
+    local Tab = Window:Tab({ Title = "Main", Icon = "home" })
+    Tab:Toggle({ Title = "Enable", Callback = function(v) print(v) end })
+    Tab:Button({ Title = "Click Me", Callback = function() print("clicked") end })
+    Tab:Slider({ Title = "Speed", Value={Min=0,Max=100,Default=50}, Callback = function(v) print(v) end })
+    Tab:Input({ Title = "Name", Placeholder = "Enter...", Callback = function(v) print(v) end })
+    Tab:Dropdown({ Title = "Mode", Values={"A","B","C"}, Callback = function(v) print(v) end })
+    Tab:Colorpicker({ Title = "Color", Default=Color3.fromRGB(255,0,0), Callback = function(c) print(c) end })
+    Tab:Keybind({ Title = "Toggle UI", Value = "RightShift", Callback = function(k) print(k) end })
+    Tab:ProgressBar({ Title = "Loading", Value = 75 })
+    Tab:Badge({ Text = "NEW" })
+    
+    OlympusUI:Notify({ Title = "Hello", Content = "Loaded!", Icon = "bell", Duration = 4 })
+]]
+
+-- ============================================================
+-- SERVICES
+-- ============================================================
+local cloneref = (cloneref or clonereference or function(i) return i end)
+local Players          = cloneref(game:GetService("Players"))
+local TweenService     = cloneref(game:GetService("TweenService"))
+local UserInputService = cloneref(game:GetService("UserInputService"))
+local HttpService      = cloneref(game:GetService("HttpService"))
+local CoreGui          = cloneref(game:GetService("CoreGui"))
+local LocalPlayer      = Players.LocalPlayer
+
+-- ============================================================
+-- THEMES
+-- ============================================================
+local Themes = {
+    Default = {
+        Background   = Color3.fromHex("#18181B"), Surface      = Color3.fromHex("#1E1E21"),
+        SurfaceAlt   = Color3.fromHex("#27272A"), Border       = Color3.fromHex("#3F3F46"),
+        Accent       = Color3.fromHex("#6366F1"), AccentHover  = Color3.fromHex("#818CF8"),
+        Text         = Color3.fromHex("#FAFAFA"), TextMuted    = Color3.fromHex("#A1A1AA"),
+        TextDisabled = Color3.fromHex("#52525B"), ToggleOn     = Color3.fromHex("#6366F1"),
+        ToggleOff    = Color3.fromHex("#3F3F46"), SliderFill   = Color3.fromHex("#6366F1"),
+        SidebarBg    = Color3.fromHex("#18181B"), TabActive    = Color3.fromHex("#27272A"),
+        TabHover     = Color3.fromHex("#222226"), Shadow       = Color3.fromHex("#000000"),
+        GradientA    = Color3.fromHex("#6366F1"), GradientB    = Color3.fromHex("#818CF8"),
+    },
+    Crimson = {
+        Background   = Color3.fromHex("#1A0A0A"), Surface      = Color3.fromHex("#200E0E"),
+        SurfaceAlt   = Color3.fromHex("#2C1414"), Border       = Color3.fromHex("#4A1E1E"),
+        Accent       = Color3.fromHex("#EF4444"), AccentHover  = Color3.fromHex("#F87171"),
+        Text         = Color3.fromHex("#FFF1F1"), TextMuted    = Color3.fromHex("#FCA5A5"),
+        TextDisabled = Color3.fromHex("#7F1D1D"), ToggleOn     = Color3.fromHex("#EF4444"),
+        ToggleOff    = Color3.fromHex("#4A1E1E"), SliderFill   = Color3.fromHex("#EF4444"),
+        SidebarBg    = Color3.fromHex("#1A0A0A"), TabActive    = Color3.fromHex("#2C1414"),
+        TabHover     = Color3.fromHex("#250F0F"), Shadow       = Color3.fromHex("#000000"),
+        GradientA    = Color3.fromHex("#FF3131"), GradientB    = Color3.fromHex("#FF6061"),
+    },
+    Midnight = {
+        Background   = Color3.fromHex("#0A0A1A"), Surface      = Color3.fromHex("#0D0D24"),
+        SurfaceAlt   = Color3.fromHex("#12122E"), Border       = Color3.fromHex("#1E1E4A"),
+        Accent       = Color3.fromHex("#3B82F6"), AccentHover  = Color3.fromHex("#60A5FA"),
+        Text         = Color3.fromHex("#EFF6FF"), TextMuted    = Color3.fromHex("#93C5FD"),
+        TextDisabled = Color3.fromHex("#1E3A5F"), ToggleOn     = Color3.fromHex("#3B82F6"),
+        ToggleOff    = Color3.fromHex("#1E1E4A"), SliderFill   = Color3.fromHex("#3B82F6"),
+        SidebarBg    = Color3.fromHex("#0A0A1A"), TabActive    = Color3.fromHex("#12122E"),
+        TabHover     = Color3.fromHex("#0F0F26"), Shadow       = Color3.fromHex("#000000"),
+        GradientA    = Color3.fromHex("#1D4ED8"), GradientB    = Color3.fromHex("#60A5FA"),
+    },
+    Aurora = {
+        Background   = Color3.fromHex("#091512"), Surface      = Color3.fromHex("#0C1C18"),
+        SurfaceAlt   = Color3.fromHex("#102420"), Border       = Color3.fromHex("#1A3D35"),
+        Accent       = Color3.fromHex("#10B981"), AccentHover  = Color3.fromHex("#34D399"),
+        Text         = Color3.fromHex("#ECFDF5"), TextMuted    = Color3.fromHex("#6EE7B7"),
+        TextDisabled = Color3.fromHex("#064E3B"), ToggleOn     = Color3.fromHex("#10B981"),
+        ToggleOff    = Color3.fromHex("#1A3D35"), SliderFill   = Color3.fromHex("#10B981"),
+        SidebarBg    = Color3.fromHex("#091512"), TabActive    = Color3.fromHex("#102420"),
+        TabHover     = Color3.fromHex("#0D1E1A"), Shadow       = Color3.fromHex("#000000"),
+        GradientA    = Color3.fromHex("#059669"), GradientB    = Color3.fromHex("#34D399"),
+    },
+    Sunset = {
+        Background   = Color3.fromHex("#1A0F08"), Surface      = Color3.fromHex("#21140A"),
+        SurfaceAlt   = Color3.fromHex("#2D1C10"), Border       = Color3.fromHex("#4D2F18"),
+        Accent       = Color3.fromHex("#F97316"), AccentHover  = Color3.fromHex("#FB923C"),
+        Text         = Color3.fromHex("#FFF7ED"), TextMuted    = Color3.fromHex("#FDBA74"),
+        TextDisabled = Color3.fromHex("#7C2D12"), ToggleOn     = Color3.fromHex("#F97316"),
+        ToggleOff    = Color3.fromHex("#4D2F18"), SliderFill   = Color3.fromHex("#F97316"),
+        SidebarBg    = Color3.fromHex("#1A0F08"), TabActive    = Color3.fromHex("#2D1C10"),
+        TabHover     = Color3.fromHex("#241508"), Shadow       = Color3.fromHex("#000000"),
+        GradientA    = Color3.fromHex("#EA580C"), GradientB    = Color3.fromHex("#FBBF24"),
+    },
+    Sakura = {
+        Background   = Color3.fromHex("#1A0A12"), Surface      = Color3.fromHex("#200D17"),
+        SurfaceAlt   = Color3.fromHex("#2C1220"), Border       = Color3.fromHex("#4A1E38"),
+        Accent       = Color3.fromHex("#EC4899"), AccentHover  = Color3.fromHex("#F472B6"),
+        Text         = Color3.fromHex("#FFF0F7"), TextMuted    = Color3.fromHex("#F9A8D4"),
+        TextDisabled = Color3.fromHex("#831843"), ToggleOn     = Color3.fromHex("#EC4899"),
+        ToggleOff    = Color3.fromHex("#4A1E38"), SliderFill   = Color3.fromHex("#EC4899"),
+        SidebarBg    = Color3.fromHex("#1A0A12"), TabActive    = Color3.fromHex("#2C1220"),
+        TabHover     = Color3.fromHex("#250F1B"), Shadow       = Color3.fromHex("#000000"),
+        GradientA    = Color3.fromHex("#DB2777"), GradientB    = Color3.fromHex("#F9A8D4"),
+    },
+}
+
+-- ============================================================
+-- UTILS
+-- ============================================================
+local function Tween(inst, props, t, style, dir)
+    local tw = TweenService:Create(inst,
+        TweenInfo.new(t or 0.3, style or Enum.EasingStyle.Quart, dir or Enum.EasingDirection.Out),
+        props)
+    tw:Play(); return tw
+end
+
+local function New(cls, props, children)
+    local o = Instance.new(cls)
+    for k,v in pairs(props or {}) do if k~="Parent" then o[k]=v end end
+    for _,c in ipairs(children or {}) do c.Parent=o end
+    if props and props.Parent then o.Parent=props.Parent end
+    return o
+end
+
+local function Corner(r,p) local c=Instance.new("UICorner");c.CornerRadius=UDim.new(0,r or 8);c.Parent=p;return c end
+local function Stroke(t,c,tr,p) local s=Instance.new("UIStroke");s.Thickness=t or 1;s.Color=c or Color3.new();s.Transparency=tr or 0;s.Parent=p;return s end
+local function Pad(t,b,l,r,p) local u=Instance.new("UIPadding");u.PaddingTop=UDim.new(0,t or 0);u.PaddingBottom=UDim.new(0,b or 0);u.PaddingLeft=UDim.new(0,l or 0);u.PaddingRight=UDim.new(0,r or 0);u.Parent=p;return u end
+
+local function List(dir,ha,va,pad,p)
+    local l=Instance.new("UIListLayout")
+    l.FillDirection=dir or Enum.FillDirection.Vertical
+    l.HorizontalAlignment=ha or Enum.HorizontalAlignment.Left
+    l.VerticalAlignment=va or Enum.VerticalAlignment.Top
+    l.Padding=UDim.new(0,pad or 4)
+    l.SortOrder=Enum.SortOrder.LayoutOrder
+    l.Parent=p; return l
+end
+
+local function AutoY(frame, layout)
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        frame.Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, layout.AbsoluteContentSize.Y)
+    end)
+end
+
+local function Ripple(btn, theme)
+    local rip = New("Frame",{Size=UDim2.fromOffset(0,0),AnchorPoint=Vector2.new(.5,.5),BackgroundColor3=theme.Accent,BackgroundTransparency=0.65,ZIndex=btn.ZIndex+5,Parent=btn})
+    Corner(999,rip)
+    local mp = UserInputService:GetMouseLocation()
+    local rel = mp - Vector2.new(btn.AbsolutePosition.X, btn.AbsolutePosition.Y)
+    rip.Position = UDim2.fromOffset(rel.X,rel.Y)
+    local sz = math.max(btn.AbsoluteSize.X,btn.AbsoluteSize.Y)*2.5
+    Tween(rip,{Size=UDim2.fromOffset(sz,sz),BackgroundTransparency=1},0.5)
+    task.delay(0.55,function() rip:Destroy() end)
+end
+
+local function Drag(bar, frame)
+    local drag,ds,sp=false
+    bar.InputBegan:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+            drag=true; ds=i.Position; sp=frame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(i)
+        if drag and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
+            local d=i.Position-ds
+            frame.Position=UDim2.new(sp.X.Scale,sp.X.Offset+d.X,sp.Y.Scale,sp.Y.Offset+d.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then drag=false end
+    end)
+end
+
+-- ============================================================
+-- ICONS (Lucide subset via rbxassetid)
+-- ============================================================
+local Icons = {
+    home="rbxassetid://11293981586",star="rbxassetid://11293817472",settings="rbxassetid://11293981898",
+    check="rbxassetid://11293981352",["x"]="rbxassetid://11293982000",info="rbxassetid://11293981658",
+    bell="rbxassetid://11293981244",user="rbxassetid://11293981965",search="rbxassetid://11293981814",
+    plus="rbxassetid://11293981770",minus="rbxassetid://11293981716",trash="rbxassetid://11293981938",
+    edit="rbxassetid://11293981446",copy="rbxassetid://11293981400",link="rbxassetid://11293981680",
+    ["refresh-cw"]="rbxassetid://11293981792",eye="rbxassetid://11293981500",lock="rbxassetid://11293981700",
+    zap="rbxassetid://11293982008",shield="rbxassetid://11293981836",github="rbxassetid://11293981572",
+    fish="rbxassetid://11293981538",bird="rbxassetid://11293981260",mouse="rbxassetid://11293981726",
+    key="rbxassetid://11293981666",flame="rbxassetid://11293981548",heart="rbxassetid://11293981612",
+    crown="rbxassetid://11293981406",diamond="rbxassetid://11293981416",target="rbxassetid://11293981928",
+    sword="rbxassetid://11293981920",skull="rbxassetid://11293981872",ghost="rbxassetid://11293981566",
+    rocket="rbxassetid://11293981802",gamepad="rbxassetid://11293981564",trophy="rbxassetid://11293981944",
+    palette="rbxassetid://11293981750",globe="rbxassetid://11293981578",folder="rbxassetid://11293981560",
+    file="rbxassetid://11293981530",download="rbxassetid://11293981422",upload="rbxassetid://11293981949",
+    monitor="rbxassetid://11293981720",cpu="rbxassetid://11293981388",wifi="rbxassetid://11293981978",
+    sun="rbxassetid://11293981916",moon="rbxassetid://11293981730",cloud="rbxassetid://11293981368",
+    droplet="rbxassetid://11293981434",leaf="rbxassetid://11293981676",bolt="rbxassetid://11293981284",
+    flag="rbxassetid://11293981542",bookmark="rbxassetid://11293981290",tag="rbxassetid://11293981924",
+    image="rbxassetid://11293981648",music="rbxassetid://11293981736",mic="rbxassetid://11293981712",
+    camera="rbxassetid://11293981310",mail="rbxassetid://11293981702",calendar="rbxassetid://11293981302",
+    clock="rbxassetid://11293981360",activity="rbxassetid://11293981206",percent="rbxassetid://11293981756",
+    layers="rbxassetid://11293981674",sliders="rbxassetid://11293981880",tool="rbxassetid://11293981936",
+    wrench="rbxassetid://11293981998",pen="rbxassetid://11293981754",code="rbxassetid://11293981374",
+    terminal="rbxassetid://11293981930",power="rbxassetid://11293981774",["log-out"]="rbxassetid://11293981698",
+    hash="rbxassetid://11293981606",menu="rbxassetid://11293981708",grid="rbxassetid://11293981596",
+    layout="rbxassetid://11293981672",list="rbxassetid://11293981694",["chevron-down"]="rbxassetid://11293981334",
+    ["chevron-up"]="rbxassetid://11293981340",["chevron-left"]="rbxassetid://11293981336",
+    ["chevron-right"]="rbxassetid://11293981338",["arrow-up"]="rbxassetid://11293981224",
+    ["arrow-down"]="rbxassetid://11293981220",["arrow-left"]="rbxassetid://11293981222",
+    ["arrow-right"]="rbxassetid://11293981223",maximize="rbxassetid://11293981704",
+    minimize="rbxassetid://11293981714",["external-link"]="rbxassetid://11293981494",
+    ["check-square"]="rbxassetid://11293981330",square="rbxassetid://11293981900",
+    circle="rbxassetid://11293981346",loader="rbxassetid://11293981692",sparkles="rbxassetid://11293981892",
+    wand="rbxassetid://11293981988",eraser="rbxassetid://11293981490",move="rbxassetid://11293981734",
+    feather="rbxassetid://11293981526",gift="rbxassetid://11293981568",["map-pin"]="rbxassetid://11293981708",
+    phone="rbxassetid://11293981760",bot="rbxassetid://11293981286",cat="rbxassetid://11293981316",
+    bug="rbxassetid://11293981298",car="rbxassetid://11293981312",plane="rbxassetid://11293981766",
+    bike="rbxassetid://11293981258",dice="rbxassetid://11293981418",puzzle="rbxassetid://11293981784",
+    swords="rbxassetid://11293981918",bomb="rbxassetid://11293981282",snowflake="rbxassetid://11293981888",
+    wind="rbxassetid://11293981996",waves="rbxassetid://11293981992",rainbow="rbxassetid://11293981788",
+    stars="rbxassetid://11293981904",infinity="rbxassetid://11293981654",binary="rbxassetid://11293981256",
+    braces="rbxassetid://11293981292",["trending-up"]="rbxassetid://11293981942",
+    ["trending-down"]="rbxassetid://11293981940",["bar-chart"]="rbxassetid://11293981226",
+    ["pie-chart"]="rbxassetid://11293981764",["circle-check"]="rbxassetid://11293981350",
+    ["toggle-left"]="rbxassetid://11293981932",["toggle-right"]="rbxassetid://11293981933",
+    ["alert-triangle"]="rbxassetid://11293981218",["shield-check"]="rbxassetid://11293981842",
+    ["rotate-cw"]="rbxassetid://11293981800",["rotate-ccw"]="rbxassetid://11293981798",
+    ["more-horizontal"]="rbxassetid://11293981728",["more-vertical"]="rbxassetid://11293981732",
+    ["volume-x"]="rbxassetid://11293981982",volume="rbxassetid://11293981974",video="rbxassetid://11293981970",
+    send="rbxassetid://11293981820",message="rbxassetid://11293981710",database="rbxassetid://11293981408",
+    server="rbxassetid://11293981826",printer="rbxassetid://11293981778",scissors="rbxassetid://11293981812",
+    ruler="rbxassetid://11293981806",compass="rbxassetid://11293981380",navigation="rbxassetid://11293981740",
+    mountain="rbxassetid://11293981738",castle="rbxassetid://11293981314",trees="rbxassetid://11293981944",
+    umbrella="rbxassetid://11293981952",thermometer="rbxassetid://11293981931",
+    ["eye-dropper"]="rbxassetid://11293981502",brush="rbxassetid://11293981294",
+    pencil="rbxassetid://11293981758",sparkle="rbxassetid://11293981890",
+    ["moon-star"]="rbxassetid://11293981731",["sun-dim"]="rbxassetid://11293981910",
+    ["cloud-rain"]="rbxassetid://11293981370",["cloud-snow"]="rbxassetid://11293981372",
+    ["cloud-lightning"]="rbxassetid://11293981366",timer="rbxassetid://11293981934",
+    laptop="rbxassetid://11293981668",tablet="rbxassetid://11293981922",
+    smartphone="rbxassetid://11293981884",package="rbxassetid://11293981748",
+    box="rbxassetid://11293981296",["hard-drive"]="rbxassetid://11293981602",
+    ["shopping-cart"]="rbxassetid://11293981862",dollar="rbxassetid://11293981430",
+    ["credit-card"]="rbxassetid://11293981402",ship="rbxassetid://11293981838",
+    joystick="rbxassetid://11293981664",scroll="rbxassetid://11293981810",
+    potion="rbxassetid://11293981772",crossbow="rbxassetid://11293981390",
+    gun="rbxassetid://11293981598",map="rbxassetid://11293981706",
+    anchor="rbxassetid://11293981218",paperclip="rbxassetid://11293981752",
+    type="rbxassetid://11293981946",bold="rbxassetid://11293981280",
+    italic="rbxassetid://11293981660",underline="rbxassetid://11293981950",
+    ["align-left"]="rbxassetid://11293981212",["align-center"]="rbxassetid://11293981208",
+    ["align-right"]="rbxassetid://11293981216",["align-justify"]="rbxassetid://11293981210",
+    sigma="rbxassetid://11293981848",["function"]="rbxassetid://11293981562",
+    eclipsee="rbxassetid://11293981444",["paint-bucket"]="rbxassetid://11293981746",
+    ["eye-off"]="rbxassetid://11293981524",unlock="rbxassetid://11293981958",
+    dog="rbxassetid://11293981428",["sun-moon"]="rbxassetid://11293981914",
+    crosshair="rbxassetid://11293981394",["map-2"]="rbxassetid://11293981706",
+}
+
+local function GetIcon(name)
+    if not name or name=="" then return nil end
+    if name:sub(1,13)=="rbxassetid://" then return name end
+    return Icons[name:lower()]
+end
+
+local function MakeIcon(name, sz, col, parent)
+    local id = GetIcon(name)
+    sz = sz or 16
+    if id then
+        return New("ImageLabel",{
+            Size=UDim2.fromOffset(sz,sz),BackgroundTransparency=1,
+            Image=id,ImageColor3=col or Color3.new(1,1,1),
+            ScaleType=Enum.ScaleType.Fit,Parent=parent
+        })
+    else
+        return New("TextLabel",{
+            Size=UDim2.fromOffset(sz,sz),BackgroundTransparency=1,
+            Text=name and name:sub(1,1):upper() or "•",
+            TextColor3=col or Color3.new(1,1,1),
+            TextSize=sz*.75,Font=Enum.Font.GothamBold,Parent=parent
+        })
+    end
+end
+
+-- ============================================================
+-- NOTIFICATION SYSTEM
+-- ============================================================
+local NotifSG, NotifContainer
+
+local function InitNotifs()
+    if NotifContainer and NotifContainer.Parent then return end
+    NotifSG = New("ScreenGui",{Name="OlympusUI_N",ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling,DisplayOrder=9999})
+    pcall(function() NotifSG.Parent=CoreGui end)
+    if not NotifSG.Parent then NotifSG.Parent=LocalPlayer.PlayerGui end
+    NotifContainer = New("Frame",{
+        Name="NC",Size=UDim2.fromOffset(300,0),
+        Position=UDim2.new(1,-316,1,-16),AnchorPoint=Vector2.new(0,1),
+        BackgroundTransparency=1,Parent=NotifSG
+    })
+    local lay=List(Enum.FillDirection.Vertical,Enum.HorizontalAlignment.Right,Enum.VerticalAlignment.Bottom,8,NotifContainer)
+    lay.VerticalAlignment=Enum.VerticalAlignment.Bottom
+    AutoY(NotifContainer,lay)
+end
+
+-- ============================================================
+-- OLYMPUSUI
+-- ============================================================
+local OlympusUI = {}
+OlympusUI.__index = OlympusUI
+OlympusUI.Version = "1.0.0"
+OlympusUI.Themes = Themes
+OlympusUI.Windows = {}
+
+function OlympusUI:Notify(cfg)
+    InitNotifs()
+    cfg = cfg or {}
+    local th = Themes[cfg.Theme or "Crimson"] or Themes.Crimson
+
+    local card = New("Frame",{
+        Name="Card",Size=UDim2.fromOffset(300,60),
+        BackgroundColor3=th.Surface,ClipsDescendants=true,
+        Parent=NotifContainer
+    })
+    Corner(10,card); Stroke(1,th.Border,0,card)
+
+    -- accent left bar
+    local bar=New("Frame",{Size=UDim2.new(0,3,1,0),BackgroundColor3=th.Accent,BorderSizePixel=0,Parent=card})
+    New("UIGradient",{Color=ColorSequence.new(th.GradientA,th.GradientB),Rotation=90,Parent=bar})
+
+    local inner=New("Frame",{
+        Size=UDim2.new(1,-3,1,0),Position=UDim2.fromOffset(3,0),
+        BackgroundTransparency=1,Parent=card
+    })
+    Pad(10,10,10,10,inner)
+    local innerL=List(Enum.FillDirection.Vertical,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Top,4,inner)
+
+    local row=New("Frame",{Size=UDim2.new(1,0,0,20),BackgroundTransparency=1,Parent=inner})
+    List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,6,row)
+
+    if cfg.Icon then
+        local ic=MakeIcon(cfg.Icon,15,th.Accent,row)
+        if ic then ic.LayoutOrder=0 end
+    end
+    New("TextLabel",{
+        Size=UDim2.fromOffset(0,20),AutomaticSize=Enum.AutomaticSize.X,
+        BackgroundTransparency=1,Text=cfg.Title or "Notification",
+        TextColor3=th.Text,TextSize=14,Font=Enum.Font.GothamBold,
+        TextXAlignment=Enum.TextXAlignment.Left,LayoutOrder=1,Parent=row
+    })
+
+    if cfg.Content then
+        New("TextLabel",{
+            Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,
+            BackgroundTransparency=1,Text=cfg.Content,TextColor3=th.TextMuted,
+            TextSize=12,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,
+            TextWrapped=true,Parent=inner
+        })
+    end
+
+    -- close button
+    if cfg.CanClose ~= false then
+        local cb=New("TextButton",{
+            Size=UDim2.fromOffset(20,20),AnchorPoint=Vector2.new(1,0),
+            Position=UDim2.new(1,-4,0,4),BackgroundTransparency=1,
+            Text="×",TextColor3=th.TextMuted,TextSize=16,Font=Enum.Font.GothamBold,
+            ZIndex=card.ZIndex+1,Parent=card
+        })
+        cb.MouseButton1Click:Connect(function()
+            Tween(card,{Position=UDim2.fromOffset(320,0)},0.25)
+            task.wait(0.3); card:Destroy()
+        end)
+    end
+
+    task.wait()
+    local h2=innerL.AbsoluteContentSize.Y+20
+    card.Size=UDim2.fromOffset(300,math.max(60,h2))
+
+    card.Position=UDim2.fromOffset(320,0)
+    Tween(card,{Position=UDim2.fromOffset(0,0)},0.3)
+
+    task.delay(cfg.Duration or 4,function()
+        if card and card.Parent then
+            Tween(card,{Position=UDim2.fromOffset(320,0)},0.25)
+            task.wait(0.3); if card and card.Parent then card:Destroy() end
+        end
+    end)
+end
+
+-- ============================================================
+-- CREATE WINDOW
+-- ============================================================
+function OlympusUI:CreateWindow(cfg)
+    cfg = cfg or {}
+    local themeName = cfg.Theme or "Crimson"
+    local theme = Themes[themeName] or Themes.Crimson
+
+    -- Screen GUI
+    local sg = New("ScreenGui",{
+        Name="OlympusUI_".. (cfg.Title or "Win"),
+        ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling,DisplayOrder=100
+    })
+    pcall(function() sg.Parent=CoreGui end)
+    if not sg.Parent then sg.Parent=LocalPlayer.PlayerGui end
+
+    -- Main frame
+    local WSize = cfg.Size or UDim2.fromOffset(560,380)
+    local mainF = New("Frame",{
+        Name="Main",Size=WSize,Position=UDim2.fromScale(0.5,0.5),AnchorPoint=Vector2.new(0.5,0.5),
+        BackgroundColor3=theme.Background,ClipsDescendants=true,Parent=sg
+    })
+    Corner(12,mainF); Stroke(1,theme.Border,0,mainF)
+
+    -- Shadow
+    New("ImageLabel",{
+        Size=UDim2.new(1,40,1,40),Position=UDim2.fromOffset(-20,-20),
+        BackgroundTransparency=1,Image="rbxassetid://6014261993",
+        ImageColor3=theme.Shadow,ImageTransparency=0.55,
+        ScaleType=Enum.ScaleType.Slice,SliceCenter=Rect.new(49,49,450,450),
+        ZIndex=0,Parent=mainF
+    })
+
+    -- ── Topbar ──────────────────────────────────────────────
+    local topbar = New("Frame",{
+        Name="Topbar",Size=UDim2.new(1,0,0,44),
+        BackgroundColor3=theme.Surface,ZIndex=2,Parent=mainF
+    })
+    Stroke(1,theme.Border,0,topbar)
+    Drag(topbar,mainF)
+    Pad(0,0,12,8,topbar)
+
+    -- Gradient accent line
+    local aLine=New("Frame",{
+        Size=UDim2.new(1,0,0,2),BackgroundColor3=theme.Accent,
+        BorderSizePixel=0,ZIndex=3,Parent=topbar
+    })
+    New("UIGradient",{Color=ColorSequence.new(theme.GradientA,theme.GradientB),Parent=aLine})
+
+    local tl=List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,8,topbar)
+
+    -- Icon
+    if cfg.Icon then
+        local ic=MakeIcon(cfg.Icon,18,theme.Accent,topbar)
+        if ic then ic.LayoutOrder=0 end
+    end
+
+    -- Title
+    New("TextLabel",{
+        Size=UDim2.fromOffset(0,44),AutomaticSize=Enum.AutomaticSize.X,
+        BackgroundTransparency=1,Text=cfg.Title or "OlympusUI",
+        TextColor3=theme.Text,TextSize=15,Font=Enum.Font.GothamBold,
+        TextXAlignment=Enum.TextXAlignment.Left,LayoutOrder=1,Parent=topbar
+    })
+
+    if cfg.Author then
+        New("TextLabel",{
+            Size=UDim2.fromOffset(0,44),AutomaticSize=Enum.AutomaticSize.X,
+            BackgroundTransparency=1,Text="by "..cfg.Author,
+            TextColor3=theme.TextMuted,TextSize=12,Font=Enum.Font.Gotham,
+            TextXAlignment=Enum.TextXAlignment.Left,LayoutOrder=2,Parent=topbar
+        })
+    end
+
+    -- Flexible spacer
+    New("Frame",{
+        Size=UDim2.new(1,0,0,0),BackgroundTransparency=1,LayoutOrder=90,Parent=topbar
+    })
+
+    -- Topbar buttons
+    local function TBtn(icon,col,cb,lo)
+        local b=New("TextButton",{
+            Size=UDim2.fromOffset(28,28),BackgroundColor3=theme.SurfaceAlt,
+            Text="",LayoutOrder=lo or 95,Parent=topbar
+        })
+        Corner(6,b)
+        local ic=MakeIcon(icon,13,col,b)
+        if ic then ic.AnchorPoint=Vector2.new(.5,.5);ic.Position=UDim2.fromScale(.5,.5) end
+        b.MouseEnter:Connect(function() Tween(b,{BackgroundColor3=col},0.15) end)
+        b.MouseLeave:Connect(function() Tween(b,{BackgroundColor3=theme.SurfaceAlt},0.15) end)
+        b.MouseButton1Click:Connect(cb); return b
+    end
+
+    local isMin=false
+    local bodyF
+
+    TBtn("minus",theme.TextMuted,function()
+        isMin=not isMin
+        if bodyF then
+            Tween(bodyF,{Size=isMin and UDim2.new(1,0,0,0) or UDim2.new(1,0,1,-44)},0.3)
+        end
+    end,95)
+
+    TBtn("x",Color3.fromHex("#EF4444"),function()
+        Tween(mainF,{BackgroundTransparency=1},0.2)
+        task.wait(0.25); sg:Destroy()
+    end,96)
+
+    -- ── Body ────────────────────────────────────────────────
+    bodyF = New("Frame",{
+        Name="Body",Size=UDim2.new(1,0,1,-44),Position=UDim2.fromOffset(0,44),
+        BackgroundTransparency=1,ClipsDescendants=true,Parent=mainF
+    })
+
+    -- Sidebar
+    local sbW = cfg.SideBarWidth or 160
+    local sidebar = New("ScrollingFrame",{
+        Name="Sidebar",Size=UDim2.new(0,sbW,1,0),
+        BackgroundColor3=theme.SidebarBg,BorderSizePixel=0,
+        ScrollBarThickness=0,ScrollingDirection=Enum.ScrollingDirection.Y,
+        CanvasSize=UDim2.fromScale(0,0),AutomaticCanvasSize=Enum.AutomaticSize.Y,
+        Parent=bodyF
+    })
+    Stroke(1,theme.Border,0,sidebar)
+    Pad(8,8,6,6,sidebar)
+    List(Enum.FillDirection.Vertical,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Top,4,sidebar)
+
+    -- Search bar
+    local searchBox
+    if cfg.SearchBar ~= false then
+        local sh=New("Frame",{
+            Size=UDim2.new(1,0,0,28),BackgroundColor3=theme.SurfaceAlt,LayoutOrder=0,Parent=sidebar
+        })
+        Corner(7,sh); Stroke(1,theme.Border,0,sh)
+        local sic=MakeIcon("search",12,theme.TextMuted,sh)
+        if sic then sic.AnchorPoint=Vector2.new(0,.5);sic.Position=UDim2.new(0,6,.5,0) end
+        searchBox=New("TextBox",{
+            Size=UDim2.new(1,-22,1,0),Position=UDim2.fromOffset(22,0),
+            BackgroundTransparency=1,Text="",PlaceholderText="Search tabs...",
+            TextColor3=theme.Text,PlaceholderColor3=theme.TextDisabled,
+            TextSize=11,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,
+            ClearTextOnFocus=false,Parent=sh
+        })
+    end
+
+    -- Tag holder
+    local tagHolder=New("Frame",{
+        Size=UDim2.new(1,0,0,0),BackgroundTransparency=1,AutomaticSize=Enum.AutomaticSize.Y,
+        LayoutOrder=1,Parent=sidebar
+    })
+    local tagL=List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,4,tagHolder)
+    tagL.Wraps=true
+
+    -- Divider
+    New("Frame",{
+        Size=UDim2.new(1,0,0,1),BackgroundColor3=theme.Border,
+        BorderSizePixel=0,LayoutOrder=2,Parent=sidebar
+    })
+
+    -- Content
+    local content=New("Frame",{
+        Name="Content",Size=UDim2.new(1,-sbW,1,0),Position=UDim2.fromOffset(sbW,0),
+        BackgroundColor3=theme.Background,ClipsDescendants=true,Parent=bodyF
+    })
+
+    -- Mobile open button
+    if cfg.OpenButton then
+        local ob=cfg.OpenButton
+        local mbtn=New("TextButton",{
+            Name="OpenBtn",Size=UDim2.fromOffset(120,34),
+            Position=UDim2.new(0,16,1,-52),
+            BackgroundColor3=theme.Accent,Text=ob.Title or "Open",
+            TextColor3=theme.Text,TextSize=12,Font=Enum.Font.GothamBold,
+            ZIndex=200,Visible=ob.OnlyMobile and UserInputService.TouchEnabled or (ob.Enabled ~= false),
+            Parent=sg
+        })
+        Corner(ob.CornerRadius and ob.CornerRadius.Offset or 17,mbtn)
+        if ob.StrokeThickness then Stroke(ob.StrokeThickness,theme.Accent,.3,mbtn) end
+        if ob.Color then New("UIGradient",{Color=ob.Color,Rotation=90,Parent=mbtn}) end
+        if ob.Draggable then Drag(mbtn,mbtn) end
+        mbtn.MouseButton1Click:Connect(function() mainF.Visible=not mainF.Visible end)
+    end
+
+    -- ── Tab System ──────────────────────────────────────────
+    local tabs, activeTab = {}, nil
+
+    local function SwitchTab(tobj)
+        if activeTab==tobj then return end
+        if activeTab then
+            Tween(activeTab._btn,{BackgroundTransparency=1},0.2)
+            Tween(activeTab._titleLbl,{TextColor3=theme.TextMuted,Font=Enum.Font.Gotham},0.15)
+            activeTab._page.Visible=false
+        end
+        activeTab=tobj
+        Tween(activeTab._btn,{BackgroundColor3=theme.TabActive,BackgroundTransparency=0},0.2)
+        Tween(activeTab._titleLbl,{TextColor3=theme.Text,Font=Enum.Font.GothamSemibold},0.15)
+        activeTab._page.Visible=true
+    end
+
+    -- ── Window Object ────────────────────────────────────────
+    local Window={}
+
+    function Window:Tag(c2)
+        c2=c2 or {}
+        local t=New("Frame",{
+            Size=UDim2.fromOffset(0,20),AutomaticSize=Enum.AutomaticSize.X,
+            BackgroundColor3=c2.Color or theme.SurfaceAlt,LayoutOrder=#tagHolder:GetChildren(),Parent=tagHolder
+        })
+        Corner(c2.Radius or 10,t)
+        Pad(0,0,7,7,t)
+        List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,4,t)
+        if c2.Icon then MakeIcon(c2.Icon,11,theme.TextMuted,t) end
+        New("TextLabel",{
+            Size=UDim2.fromOffset(0,20),AutomaticSize=Enum.AutomaticSize.X,
+            BackgroundTransparency=1,Text=c2.Title or "",TextColor3=theme.Text,
+            TextSize=11,Font=Enum.Font.GothamBold,Parent=t
+        })
+        if c2.Border then Stroke(1,theme.Border,0,t) end
+    end
+
+    function Window:Tab(c2)
+        c2=c2 or {}
+        local lo=#tabs+10
+
+        -- Sidebar button
+        local btn=New("TextButton",{
+            Size=UDim2.new(1,0,0,32),BackgroundColor3=theme.TabActive,
+            BackgroundTransparency=1,Text="",LayoutOrder=lo,Parent=sidebar
+        })
+        Corner(7,btn); Pad(0,0,8,8,btn)
+        List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,6,btn)
+
+        local tabIcon
+        if c2.Icon then
+            tabIcon=MakeIcon(c2.Icon,14,theme.TextMuted,btn)
+            if tabIcon then tabIcon.LayoutOrder=0 end
+        end
+
+        local titleLbl=New("TextLabel",{
+            Size=UDim2.fromOffset(0,32),AutomaticSize=Enum.AutomaticSize.X,
+            BackgroundTransparency=1,Text=c2.Title or "Tab",
+            TextColor3=theme.TextMuted,TextSize=13,Font=Enum.Font.Gotham,
+            TextXAlignment=Enum.TextXAlignment.Left,LayoutOrder=1,Parent=btn
+        })
+
+        -- Page
+        local page=New("ScrollingFrame",{
+            Name="Page_"..(c2.Title or "Tab"),Size=UDim2.fromScale(1,1),
+            BackgroundTransparency=1,ScrollBarThickness=3,
+            ScrollBarImageColor3=theme.Border,ScrollingDirection=Enum.ScrollingDirection.Y,
+            CanvasSize=UDim2.fromScale(0,0),AutomaticCanvasSize=Enum.AutomaticSize.Y,
+            Visible=false,Parent=content
+        })
+        Pad(10,10,10,10,page)
+        List(Enum.FillDirection.Vertical,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Top,6,page)
+
+        btn.MouseEnter:Connect(function()
+            if activeTab and activeTab._btn==btn then return end
+            Tween(btn,{BackgroundColor3=theme.TabHover,BackgroundTransparency=0},0.15)
+            Tween(titleLbl,{TextColor3=theme.Text},0.15)
+        end)
+        btn.MouseLeave:Connect(function()
+            if activeTab and activeTab._btn==btn then return end
+            Tween(btn,{BackgroundTransparency=1},0.15)
+            Tween(titleLbl,{TextColor3=theme.TextMuted},0.15)
+        end)
+
+        local tobj={_btn=btn,_page=page,_titleLbl=titleLbl,_theme=theme}
+        btn.MouseButton1Click:Connect(function() SwitchTab(tobj) end)
+
+        if searchBox then
+            searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+                local q=searchBox.Text:lower()
+                local ti=(c2.Title or ""):lower()
+                btn.Visible=q=="" or ti:find(q,1,true)~=nil
+            end)
+        end
+
+        table.insert(tabs,tobj)
+        if #tabs==1 then SwitchTab(tobj) end
+
+        -- ─── ELEMENT BUILDERS ────────────────────────────────
+        local Tab={}
+
+        local function EF(parent,h)
+            local f=New("Frame",{
+                Size=UDim2.new(1,0,0,h or 36),BackgroundColor3=theme.Surface,Parent=parent or page
+            })
+            Corner(8,f); Stroke(1,theme.Border,0,f); return f
+        end
+
+        -- ── BUTTON ──────────────────────────────────────────
+        function Tab:Button(c3)
+            c3=c3 or {}
+            local h=c3.Desc and 52 or 36
+            local f=EF(page,h); Pad(0,0,12,12,f)
+            List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,8,f)
+            if c3.Icon and c3.Icon~="" then MakeIcon(c3.Icon,15,theme.Accent,f) end
+            local th2=New("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Parent=f})
+            New("TextLabel",{
+                Size=UDim2.new(1,0,0,c3.Desc and 18 or 36),BackgroundTransparency=1,
+                Text=c3.Title or "Button",TextColor3=theme.Text,TextSize=13,
+                Font=Enum.Font.GothamSemibold,TextXAlignment=Enum.TextXAlignment.Left,Parent=th2
+            })
+            if c3.Desc then
+                New("TextLabel",{
+                    Size=UDim2.new(1,0,0,16),Position=UDim2.fromOffset(0,20),
+                    BackgroundTransparency=1,Text=c3.Desc,TextColor3=theme.TextMuted,
+                    TextSize=11,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,Parent=th2
+                })
+            end
+            local cl=New("TextButton",{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text="",ZIndex=f.ZIndex+1,Parent=f})
+            cl.MouseEnter:Connect(function() Tween(f,{BackgroundColor3=theme.SurfaceAlt},0.15) end)
+            cl.MouseLeave:Connect(function() Tween(f,{BackgroundColor3=theme.Surface},0.15) end)
+            cl.MouseButton1Click:Connect(function()
+                Ripple(f,theme)
+                if c3.Callback then c3.Callback() end
+            end)
+            local obj={}
+            function obj:Highlight()
+                Tween(f,{BackgroundColor3=theme.Accent},0.15)
+                task.wait(0.3); Tween(f,{BackgroundColor3=theme.Surface},0.3)
+            end
+            return obj
+        end
+
+        -- ── TOGGLE ──────────────────────────────────────────
+        function Tab:Toggle(c3)
+            c3=c3 or {}
+            local val=c3.Value or false
+            local h=c3.Desc and 52 or 36
+            local f=EF(page,h); Pad(0,0,12,12,f)
+            List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,8,f)
+            if c3.Icon then MakeIcon(c3.Icon,15,theme.Accent,f) end
+            local th2=New("Frame",{Size=UDim2.new(1,-52,1,0),BackgroundTransparency=1,Parent=f})
+            New("TextLabel",{
+                Size=UDim2.new(1,0,0,c3.Desc and 18 or 36),BackgroundTransparency=1,
+                Text=c3.Title or "Toggle",TextColor3=theme.Text,TextSize=13,
+                Font=Enum.Font.GothamSemibold,TextXAlignment=Enum.TextXAlignment.Left,Parent=th2
+            })
+            if c3.Desc then
+                New("TextLabel",{
+                    Size=UDim2.new(1,0,0,16),Position=UDim2.fromOffset(0,20),
+                    BackgroundTransparency=1,Text=c3.Desc,TextColor3=theme.TextMuted,
+                    TextSize=11,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,Parent=th2
+                })
+            end
+            local isCb=c3.Type=="Checkbox"
+            local track,knob
+            if isCb then
+                track=New("Frame",{Size=UDim2.fromOffset(18,18),BackgroundColor3=val and theme.ToggleOn or theme.ToggleOff,Parent=f})
+                Corner(4,track); Stroke(1.5,theme.Border,0,track)
+                knob=New("ImageLabel",{
+                    Size=UDim2.fromOffset(12,12),AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),
+                    BackgroundTransparency=1,Image=Icons["check"] or "",
+                    ImageColor3=theme.Text,ImageTransparency=val and 0 or 1,Parent=track
+                })
+            else
+                track=New("Frame",{Size=UDim2.fromOffset(40,22),BackgroundColor3=val and theme.ToggleOn or theme.ToggleOff,Parent=f})
+                Corner(11,track)
+                knob=New("Frame",{
+                    Size=UDim2.fromOffset(16,16),
+                    Position=val and UDim2.fromOffset(21,3) or UDim2.fromOffset(3,3),
+                    BackgroundColor3=theme.Text,Parent=track
+                })
+                Corner(8,knob)
+            end
+            local cl=New("TextButton",{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text="",ZIndex=f.ZIndex+1,Parent=f})
+            local function upd()
+                if isCb then
+                    Tween(track,{BackgroundColor3=val and theme.ToggleOn or theme.ToggleOff},0.2)
+                    Tween(knob,{ImageTransparency=val and 0 or 1},0.15)
+                else
+                    Tween(track,{BackgroundColor3=val and theme.ToggleOn or theme.ToggleOff},0.2)
+                    Tween(knob,{Position=val and UDim2.fromOffset(21,3) or UDim2.fromOffset(3,3)},0.2)
+                end
+            end
+            cl.MouseButton1Click:Connect(function() val=not val; upd(); if c3.Callback then c3.Callback(val) end end)
+            local obj={}
+            function obj:Set(v) val=v; upd(); if c3.Callback then c3.Callback(val) end end
+            function obj:Get() return val end
+            return obj
+        end
+
+        -- ── SLIDER ──────────────────────────────────────────
+        function Tab:Slider(c3)
+            c3=c3 or {}
+            local vc=c3.Value or {Min=0,Max=100,Default=50}
+            local mn,mx,cur,st=vc.Min or 0,vc.Max or 100,vc.Default or 0,c3.Step or 1
+            local h=c3.Desc and 60 or 48
+            local f=EF(page,h); Pad(0,0,12,12,f)
+            New("TextLabel",{
+                Size=UDim2.new(1,-60,0,16),Position=UDim2.fromOffset(0,6),
+                BackgroundTransparency=1,Text=c3.Title or "Slider",TextColor3=theme.Text,
+                TextSize=13,Font=Enum.Font.GothamSemibold,TextXAlignment=Enum.TextXAlignment.Left,Parent=f
+            })
+            local vl=New("TextLabel",{
+                Size=UDim2.fromOffset(50,16),Position=UDim2.new(1,-50,0,6),
+                BackgroundTransparency=1,Text=tostring(cur),TextColor3=theme.Accent,
+                TextSize=12,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Right,Parent=f
+            })
+            if c3.Desc then
+                New("TextLabel",{
+                    Size=UDim2.new(1,0,0,14),Position=UDim2.fromOffset(0,24),
+                    BackgroundTransparency=1,Text=c3.Desc,TextColor3=theme.TextMuted,
+                    TextSize=11,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,Parent=f
+                })
+            end
+            local ty=c3.Desc and 48 or 36
+            local trk=New("Frame",{Size=UDim2.new(1,0,0,6),Position=UDim2.new(0,0,0,ty),BackgroundColor3=theme.ToggleOff,Parent=f})
+            Corner(3,trk)
+            local fill=New("Frame",{Size=UDim2.new((cur-mn)/(mx-mn),0,1,0),BackgroundColor3=theme.SliderFill,Parent=trk})
+            Corner(3,fill)
+            New("UIGradient",{Color=ColorSequence.new(theme.GradientA,theme.GradientB),Parent=fill})
+            local dot=New("Frame",{
+                Size=UDim2.fromOffset(14,14),AnchorPoint=Vector2.new(.5,.5),
+                Position=UDim2.new((cur-mn)/(mx-mn),0,.5,0),BackgroundColor3=theme.Text,Parent=trk
+            })
+            Corner(7,dot); Stroke(2,theme.Accent,0,dot)
+            local ds=false
+            local function upd(ix)
+                local r=math.clamp((ix-trk.AbsolutePosition.X)/trk.AbsoluteSize.X,0,1)
+                local raw=mn+r*(mx-mn)
+                cur=math.clamp(math.floor(raw/st+.5)*st,mn,mx)
+                local p=(cur-mn)/(mx-mn)
+                Tween(fill,{Size=UDim2.new(p,0,1,0)},0.05)
+                Tween(dot,{Position=UDim2.new(p,0,.5,0)},0.05)
+                vl.Text=tostring(cur)
+                if c3.Callback then c3.Callback(cur) end
+            end
+            trk.InputBegan:Connect(function(i)
+                if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+                    ds=true; upd(i.Position.X)
+                end
+            end)
+            UserInputService.InputChanged:Connect(function(i)
+                if ds and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then upd(i.Position.X) end
+            end)
+            UserInputService.InputEnded:Connect(function(i)
+                if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then ds=false end
+            end)
+            local obj={}
+            function obj:Set(v)
+                cur=math.clamp(v,mn,mx)
+                local p=(cur-mn)/(mx-mn)
+                fill.Size=UDim2.new(p,0,1,0); dot.Position=UDim2.new(p,0,.5,0); vl.Text=tostring(cur)
+            end
+            function obj:Get() return cur end
+            return obj
+        end
+
+        -- ── INPUT ───────────────────────────────────────────
+        function Tab:Input(c3)
+            c3=c3 or {}
+            local isTA=c3.Type=="Textarea"
+            local h=isTA and 78 or (c3.Desc and 52 or 36)
+            local f=EF(page,h); Pad(0,0,12,12,f)
+            if not isTA then
+                List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,8,f)
+                if c3.Icon then MakeIcon(c3.Icon,15,theme.Accent,f) end
+                local th2=New("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Parent=f})
+                if c3.Title then
+                    New("TextLabel",{
+                        Size=UDim2.new(1,0,0,c3.Desc and 18 or 36),BackgroundTransparency=1,
+                        Text=c3.Title,TextColor3=theme.Text,TextSize=13,
+                        Font=Enum.Font.GothamSemibold,TextXAlignment=Enum.TextXAlignment.Left,Parent=th2
+                    })
+                end
+                if c3.Desc then
+                    New("TextLabel",{
+                        Size=UDim2.new(1,0,0,16),Position=UDim2.fromOffset(0,20),
+                        BackgroundTransparency=1,Text=c3.Desc,TextColor3=theme.TextMuted,
+                        TextSize=11,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,Parent=th2
+                    })
+                end
+                local ib=New("TextBox",{
+                    Size=UDim2.fromOffset(120,26),AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,0,.5,0),
+                    BackgroundColor3=theme.SurfaceAlt,Text=c3.Default or "",
+                    PlaceholderText=c3.Placeholder or "Enter...",TextColor3=theme.Text,
+                    PlaceholderColor3=theme.TextDisabled,TextSize=12,Font=Enum.Font.Gotham,
+                    ClearTextOnFocus=false,Parent=f
+                })
+                Corner(6,ib); Stroke(1,theme.Border,0,ib); Pad(0,0,8,8,ib)
+                ib.FocusLost:Connect(function() if c3.Callback then c3.Callback(ib.Text) end end)
+                ib:GetPropertyChangedSignal("Text"):Connect(function()
+                    if c3.Changed then c3.Changed(ib.Text) end
+                end)
+                local obj={}
+                function obj:Set(v) ib.Text=v end
+                function obj:Get() return ib.Text end
+                return obj
+            else
+                New("TextLabel",{
+                    Size=UDim2.new(1,0,0,18),BackgroundTransparency=1,Text=c3.Title or "Input",
+                    TextColor3=theme.Text,TextSize=13,Font=Enum.Font.GothamSemibold,
+                    TextXAlignment=Enum.TextXAlignment.Left,Parent=f
+                })
+                local ta=New("TextBox",{
+                    Size=UDim2.new(1,0,1,-22),Position=UDim2.fromOffset(0,22),
+                    BackgroundColor3=theme.SurfaceAlt,Text=c3.Default or "",
+                    PlaceholderText=c3.Placeholder or "Enter text...",TextColor3=theme.Text,
+                    PlaceholderColor3=theme.TextDisabled,TextSize=12,Font=Enum.Font.Gotham,
+                    TextWrapped=true,MultiLine=true,ClearTextOnFocus=false,Parent=f
+                })
+                Corner(6,ta); Stroke(1,theme.Border,0,ta); Pad(4,4,8,8,ta)
+                ta.FocusLost:Connect(function() if c3.Callback then c3.Callback(ta.Text) end end)
+                local obj={}
+                function obj:Set(v) ta.Text=v end
+                function obj:Get() return ta.Text end
+                return obj
+            end
+        end
+
+        -- ── DROPDOWN ────────────────────────────────────────
+        function Tab:Dropdown(c3)
+            c3=c3 or {}
+            local vals=c3.Values or {}
+            local sel=c3.Value
+            local multi=c3.Multi or false
+            local msel={}
+            local open=false
+
+            local f=EF(page,36); Pad(0,0,12,12,f)
+            local hdr=New("Frame",{Size=UDim2.new(1,0,0,36),BackgroundTransparency=1,Parent=f})
+            List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,8,hdr)
+            if c3.Icon then MakeIcon(c3.Icon,15,theme.Accent,hdr) end
+            New("TextLabel",{
+                Size=UDim2.new(1,-82,1,0),BackgroundTransparency=1,Text=c3.Title or "Dropdown",
+                TextColor3=theme.Text,TextSize=13,Font=Enum.Font.GothamSemibold,
+                TextXAlignment=Enum.TextXAlignment.Left,Parent=hdr
+            })
+            local slbl=New("TextLabel",{
+                Size=UDim2.fromOffset(72,36),BackgroundTransparency=1,
+                Text=multi and "None" or (tostring(sel or "Select")),
+                TextColor3=theme.TextMuted,TextSize=11,Font=Enum.Font.Gotham,
+                TextXAlignment=Enum.TextXAlignment.Right,TextTruncate=Enum.TextTruncate.AtEnd,Parent=hdr
+            })
+
+            local panel=New("Frame",{
+                Size=UDim2.new(1,0,0,0),BackgroundColor3=theme.SurfaceAlt,
+                ClipsDescendants=true,LayoutOrder=99,Parent=f
+            })
+            Corner(8,panel); Stroke(1,theme.Border,0,panel); Pad(4,4,4,4,panel)
+            local pL=List(Enum.FillDirection.Vertical,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Top,2,panel)
+
+            local function glbl(v) return type(v)=="table" and (v.Title or tostring(v)) or tostring(v) end
+
+            local function build()
+                for _,c in ipairs(panel:GetChildren()) do if c:IsA("TextButton") or c:IsA("Frame") and c~=panel then c:Destroy() end end
+                for i,v in ipairs(vals) do
+                    if type(v)=="table" and v.Type=="Divider" then
+                        New("Frame",{Size=UDim2.new(1,-8,0,1),BackgroundColor3=theme.Border,BorderSizePixel=0,LayoutOrder=i,Parent=panel})
+                    else
+                        local lbl=glbl(v)
+                        local item=New("TextButton",{
+                            Size=UDim2.new(1,0,0,28),BackgroundColor3=theme.SurfaceAlt,
+                            BackgroundTransparency=1,Text="",LayoutOrder=i,Parent=panel
+                        })
+                        Corner(6,item); Pad(0,0,8,8,item)
+                        List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,6,item)
+                        if type(v)=="table" and v.Icon then MakeIcon(v.Icon,13,theme.TextMuted,item) end
+                        local isSel=multi and msel[lbl] or (sel==lbl)
+                        local ilbl=New("TextLabel",{
+                            Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Text=lbl,
+                            TextColor3=isSel and theme.Accent or theme.Text,
+                            TextSize=12,Font=isSel and Enum.Font.GothamBold or Enum.Font.Gotham,
+                            TextXAlignment=Enum.TextXAlignment.Left,Parent=item
+                        })
+                        item.MouseEnter:Connect(function() Tween(item,{BackgroundTransparency=0,BackgroundColor3=theme.TabHover},0.1) end)
+                        item.MouseLeave:Connect(function() Tween(item,{BackgroundTransparency=1},0.1) end)
+                        item.MouseButton1Click:Connect(function()
+                            if multi then
+                                msel[lbl]=not msel[lbl]
+                                ilbl.TextColor3=msel[lbl] and theme.Accent or theme.Text
+                                ilbl.Font=msel[lbl] and Enum.Font.GothamBold or Enum.Font.Gotham
+                                local s2={}
+                                for k,sv in pairs(msel) do if sv then table.insert(s2,k) end end
+                                slbl.Text=#s2>0 and table.concat(s2,", ") or "None"
+                                if c3.Callback then c3.Callback(s2) end
+                            else
+                                sel=lbl; slbl.Text=lbl
+                                if c3.Callback then c3.Callback(type(v)=="table" and v or lbl) end
+                                open=false
+                                Tween(panel,{Size=UDim2.new(1,0,0,0)},0.2)
+                                Tween(f,{Size=UDim2.new(1,0,0,36)},0.2)
+                                build()
+                            end
+                        end)
+                    end
+                end
+            end
+            build()
+
+            local cl=New("TextButton",{Size=UDim2.new(1,0,0,36),BackgroundTransparency=1,Text="",ZIndex=f.ZIndex+1,Parent=hdr})
+            cl.MouseButton1Click:Connect(function()
+                open=not open
+                if open then
+                    build()
+                    task.wait()
+                    local ph=pL.AbsoluteContentSize.Y+8
+                    Tween(panel,{Size=UDim2.new(1,0,0,ph)},0.25)
+                    Tween(f,{Size=UDim2.new(1,0,0,36+ph+4)},0.25)
+                else
+                    Tween(panel,{Size=UDim2.new(1,0,0,0)},0.2)
+                    Tween(f,{Size=UDim2.new(1,0,0,36)},0.2)
+                end
+            end)
+
+            local obj={}
+            function obj:Refresh(nv) vals=nv; build() end
+            function obj:Select(v)
+                if multi then for _,sv in ipairs(v) do msel[sv]=true end
+                else sel=tostring(v); slbl.Text=tostring(v) end
+            end
+            function obj:Get()
+                if multi then local s2={};for k,sv in pairs(msel) do if sv then table.insert(s2,k) end end; return s2 end
+                return sel
+            end
+            return obj
+        end
+
+        -- ── COLORPICKER ─────────────────────────────────────
+        function Tab:Colorpicker(c3)
+            c3=c3 or {}
+            local col=c3.Default or Color3.fromRGB(255,0,0)
+            local ch,cs,cv=Color3.toHSV(col)
+            local open=false
+
+            local f=EF(page,36); Pad(0,0,12,12,f)
+            List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,8,f)
+            if c3.Icon then MakeIcon(c3.Icon,15,theme.Accent,f) end
+            New("TextLabel",{
+                Size=UDim2.new(1,-40,1,0),BackgroundTransparency=1,Text=c3.Title or "Color",
+                TextColor3=theme.Text,TextSize=13,Font=Enum.Font.GothamSemibold,
+                TextXAlignment=Enum.TextXAlignment.Left,Parent=f
+            })
+            local prev=New("Frame",{Size=UDim2.fromOffset(24,24),BackgroundColor3=col,Parent=f})
+            Corner(6,prev); Stroke(1.5,theme.Border,0,prev)
+
+            local panel=New("Frame",{
+                Size=UDim2.new(1,0,0,0),BackgroundColor3=theme.SurfaceAlt,
+                ClipsDescendants=true,LayoutOrder=99,Parent=f
+            })
+            Corner(8,panel); Stroke(1,theme.Border,0,panel); Pad(8,8,8,8,panel)
+
+            local svP=New("Frame",{Size=UDim2.new(1,0,0,100),BackgroundColor3=Color3.fromHSV(ch,1,1),Parent=panel})
+            Corner(6,svP)
+            New("UIGradient",{
+                Color=ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.fromRGB(255,255,255)),ColorSequenceKeypoint.new(1,Color3.fromRGB(255,255,255))}),
+                Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(1,1)}),
+                Parent=svP
+            })
+            local svo=New("Frame",{Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.fromRGB(0,0,0),BackgroundTransparency=0,Parent=svP})
+            Corner(6,svo)
+            New("UIGradient",{
+                Color=ColorSequence.new(Color3.fromRGB(255,255,255),Color3.fromRGB(0,0,0)),
+                Transparency=NumberSequence.new(NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(1,0)),
+                Rotation=90,Parent=svo
+            })
+            local svDot=New("Frame",{
+                Size=UDim2.fromOffset(10,10),AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(cs,0,1-cv,0),
+                BackgroundColor3=Color3.fromRGB(255,255,255),ZIndex=5,Parent=svP
+            })
+            Corner(5,svDot); Stroke(1.5,Color3.fromRGB(0,0,0),0,svDot)
+
+            local hBar=New("Frame",{Size=UDim2.new(1,0,0,12),Parent=panel})
+            Corner(6,hBar)
+            New("UIGradient",{Color=ColorSequence.new({
+                ColorSequenceKeypoint.new(0,Color3.fromHSV(0,1,1)),ColorSequenceKeypoint.new(1/6,Color3.fromHSV(1/6,1,1)),
+                ColorSequenceKeypoint.new(2/6,Color3.fromHSV(2/6,1,1)),ColorSequenceKeypoint.new(3/6,Color3.fromHSV(3/6,1,1)),
+                ColorSequenceKeypoint.new(4/6,Color3.fromHSV(4/6,1,1)),ColorSequenceKeypoint.new(5/6,Color3.fromHSV(5/6,1,1)),
+                ColorSequenceKeypoint.new(1,Color3.fromHSV(1,1,1))
+            }),Parent=hBar})
+            local hDot=New("Frame",{
+                Size=UDim2.fromOffset(10,12),AnchorPoint=Vector2.new(.5,0),Position=UDim2.new(ch,0,0,0),
+                BackgroundColor3=Color3.fromRGB(255,255,255),ZIndex=5,Parent=hBar
+            })
+            Corner(4,hDot); Stroke(1,Color3.fromRGB(0,0,0),0,hDot)
+
+            local hexBox=New("TextBox",{
+                Size=UDim2.new(1,0,0,22),BackgroundColor3=theme.Surface,
+                Text="#"..col:ToHex():upper(),TextColor3=theme.Text,TextSize=12,
+                Font=Enum.Font.Code,TextXAlignment=Enum.TextXAlignment.Center,
+                ClearTextOnFocus=false,Parent=panel
+            })
+            Corner(6,hexBox); Stroke(1,theme.Border,0,hexBox)
+
+            local pL2=List(Enum.FillDirection.Vertical,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Top,6,panel)
+
+            local function apply()
+                col=Color3.fromHSV(ch,cs,cv)
+                prev.BackgroundColor3=col
+                svP.BackgroundColor3=Color3.fromHSV(ch,1,1)
+                svDot.Position=UDim2.new(cs,0,1-cv,0)
+                hDot.Position=UDim2.new(ch,0,0,0)
+                hexBox.Text="#"..col:ToHex():upper()
+                if c3.Callback then c3.Callback(col) end
+            end
+
+            local dSV,dH=false,false
+            svP.InputBegan:Connect(function(i)
+                if i.UserInputType==Enum.UserInputType.MouseButton1 then
+                    dSV=true
+                    cs=math.clamp((i.Position.X-svP.AbsolutePosition.X)/svP.AbsoluteSize.X,0,1)
+                    cv=1-math.clamp((i.Position.Y-svP.AbsolutePosition.Y)/svP.AbsoluteSize.Y,0,1)
+                    apply()
+                end
+            end)
+            hBar.InputBegan:Connect(function(i)
+                if i.UserInputType==Enum.UserInputType.MouseButton1 then
+                    dH=true
+                    ch=math.clamp((i.Position.X-hBar.AbsolutePosition.X)/hBar.AbsoluteSize.X,0,1)
+                    apply()
+                end
+            end)
+            UserInputService.InputChanged:Connect(function(i)
+                if i.UserInputType==Enum.UserInputType.MouseMovement then
+                    if dSV then
+                        cs=math.clamp((i.Position.X-svP.AbsolutePosition.X)/svP.AbsoluteSize.X,0,1)
+                        cv=1-math.clamp((i.Position.Y-svP.AbsolutePosition.Y)/svP.AbsoluteSize.Y,0,1)
+                        apply()
+                    elseif dH then
+                        ch=math.clamp((i.Position.X-hBar.AbsolutePosition.X)/hBar.AbsoluteSize.X,0,1)
+                        apply()
+                    end
+                end
+            end)
+            UserInputService.InputEnded:Connect(function(i)
+                if i.UserInputType==Enum.UserInputType.MouseButton1 then dSV=false;dH=false end
+            end)
+            hexBox.FocusLost:Connect(function()
+                pcall(function()
+                    col=Color3.fromHex(hexBox.Text:gsub("#",""))
+                    ch,cs,cv=Color3.toHSV(col); apply()
+                end)
+            end)
+
+            local cl=New("TextButton",{Size=UDim2.new(1,0,0,36),BackgroundTransparency=1,Text="",ZIndex=f.ZIndex+1,Parent=f})
+            cl.MouseButton1Click:Connect(function()
+                open=not open
+                if open then
+                    task.wait()
+                    local ph=pL2.AbsoluteContentSize.Y+16
+                    Tween(panel,{Size=UDim2.new(1,0,0,ph)},0.25)
+                    Tween(f,{Size=UDim2.new(1,0,0,36+ph+4)},0.25)
+                else
+                    Tween(panel,{Size=UDim2.new(1,0,0,0)},0.2)
+                    Tween(f,{Size=UDim2.new(1,0,0,36)},0.2)
+                end
+            end)
+
+            local obj={}
+            function obj:Set(c) col=c;ch,cs,cv=Color3.toHSV(c);apply() end
+            function obj:Get() return col end
+            return obj
+        end
+
+        -- ── KEYBIND ─────────────────────────────────────────
+        function Tab:Keybind(c3)
+            c3=c3 or {}
+            local k=c3.Value or "None"
+            local lst=false
+            local f=EF(page,36); Pad(0,0,12,12,f)
+            List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,8,f)
+            New("TextLabel",{
+                Size=UDim2.new(1,-80,1,0),BackgroundTransparency=1,Text=c3.Title or "Keybind",
+                TextColor3=theme.Text,TextSize=13,Font=Enum.Font.GothamSemibold,
+                TextXAlignment=Enum.TextXAlignment.Left,Parent=f
+            })
+            local kb=New("TextButton",{
+                Size=UDim2.fromOffset(72,24),BackgroundColor3=theme.SurfaceAlt,
+                Text=k,TextColor3=theme.Accent,TextSize=12,Font=Enum.Font.GothamBold,Parent=f
+            })
+            Corner(6,kb); Stroke(1,theme.Border,0,kb)
+            kb.MouseButton1Click:Connect(function() lst=true;kb.Text="...";kb.TextColor3=theme.TextMuted end)
+            UserInputService.InputBegan:Connect(function(i,gp)
+                if not lst then return end
+                if i.UserInputType==Enum.UserInputType.Keyboard then
+                    lst=false; k=i.KeyCode.Name; kb.Text=k; kb.TextColor3=theme.Accent
+                    if c3.Callback then c3.Callback(k) end
+                end
+            end)
+            local obj={}
+            function obj:Set(v) k=v;kb.Text=v end
+            function obj:Get() return k end
+            return obj
+        end
+
+        -- ── PARAGRAPH ────────────────────────────────────────
+        function Tab:Paragraph(c3)
+            c3=c3 or {}
+            local f=EF(page,0)
+            f.AutomaticSize=Enum.AutomaticSize.Y
+            Pad(10,10,12,12,f)
+            List(Enum.FillDirection.Vertical,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Top,4,f)
+            if c3.Title then
+                New("TextLabel",{
+                    Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,
+                    BackgroundTransparency=1,Text=c3.Title,TextColor3=theme.Text,
+                    TextSize=c3.TextSize or 14,Font=Enum.Font.GothamBold,
+                    TextXAlignment=Enum.TextXAlignment.Left,TextWrapped=true,Parent=f
+                })
+            end
+            if c3.Desc then
+                New("TextLabel",{
+                    Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,
+                    BackgroundTransparency=1,Text=c3.Desc,TextColor3=theme.TextMuted,
+                    TextSize=12,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,
+                    TextWrapped=true,Parent=f
+                })
+            end
+        end
+
+        -- ── DIVIDER ──────────────────────────────────────────
+        function Tab:Divider()
+            New("Frame",{Size=UDim2.new(1,0,0,1),BackgroundColor3=theme.Border,BorderSizePixel=0,Parent=page})
+        end
+
+        -- ── SECTION label ────────────────────────────────────
+        function Tab:Section(c3)
+            c3=c3 or {}
+            New("TextLabel",{
+                Size=UDim2.new(1,0,0,20),BackgroundTransparency=1,
+                Text=(c3.Title or ""):upper(),TextColor3=theme.TextMuted,
+                TextSize=c3.TextSize or 11,Font=Enum.Font.GothamBold,
+                TextXAlignment=Enum.TextXAlignment.Left,Parent=page
+            })
+            local sec={}
+            for k,fn in pairs(Tab) do sec[k]=fn end
+            return sec
+        end
+
+        -- ── SPACE ────────────────────────────────────────────
+        function Tab:Space(c3)
+            c3=c3 or {}
+            New("Frame",{Size=UDim2.new(1,0,0,(c3.Columns or 1)*4),BackgroundTransparency=1,Parent=page})
+        end
+
+        -- ── IMAGE ────────────────────────────────────────────
+        function Tab:Image(c3)
+            c3=c3 or {}
+            local f=New("Frame",{
+                Size=c3.Size or UDim2.new(1,0,0,110),BackgroundColor3=theme.Surface,Parent=page
+            })
+            Corner(c3.CornerRadius and c3.CornerRadius.Offset or 8,f)
+            New("ImageLabel",{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Image=c3.Image or "",ScaleType=Enum.ScaleType.Crop,Parent=f})
+        end
+
+        -- ── PROGRESS BAR ─────────────────────────────────────
+        function Tab:ProgressBar(c3)
+            c3=c3 or {}
+            local val=math.clamp(c3.Value or 0,0,100)
+            local f=EF(page,c3.Desc and 52 or 40); Pad(0,0,12,12,f)
+            New("TextLabel",{
+                Size=UDim2.new(1,-40,0,16),Position=UDim2.fromOffset(0,6),
+                BackgroundTransparency=1,Text=c3.Title or "Progress",TextColor3=theme.Text,
+                TextSize=13,Font=Enum.Font.GothamSemibold,TextXAlignment=Enum.TextXAlignment.Left,Parent=f
+            })
+            local vl=New("TextLabel",{
+                Size=UDim2.fromOffset(36,16),Position=UDim2.new(1,-36,0,6),
+                BackgroundTransparency=1,Text=val.."%",TextColor3=theme.Accent,
+                TextSize=12,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Right,Parent=f
+            })
+            local trk=New("Frame",{Size=UDim2.new(1,0,0,6),Position=UDim2.fromOffset(0,26),BackgroundColor3=theme.ToggleOff,Parent=f})
+            Corner(3,trk)
+            local fill=New("Frame",{Size=UDim2.new(val/100,0,1,0),BackgroundColor3=theme.Accent,Parent=trk})
+            Corner(3,fill)
+            New("UIGradient",{Color=ColorSequence.new(theme.GradientA,theme.GradientB),Parent=fill})
+            local obj={}
+            function obj:Set(v)
+                val=math.clamp(v,0,100)
+                Tween(fill,{Size=UDim2.new(val/100,0,1,0)},0.3)
+                vl.Text=val.."%"
+            end
+            function obj:Get() return val end
+            return obj
+        end
+
+        -- ── BADGE ────────────────────────────────────────────
+        function Tab:Badge(c3)
+            c3=c3 or {}
+            local cols={NEW=Color3.fromHex("#10B981"),BETA=Color3.fromHex("#F97316"),HOT=Color3.fromHex("#EF4444"),UPDATE=Color3.fromHex("#3B82F6")}
+            local bc=c3.Color or cols[c3.Text] or theme.Accent
+            local b=New("Frame",{Size=UDim2.fromOffset(0,18),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=bc,Parent=page})
+            Corner(9,b); Pad(0,0,8,8,b)
+            New("TextLabel",{
+                Size=UDim2.fromOffset(0,18),AutomaticSize=Enum.AutomaticSize.X,
+                BackgroundTransparency=1,Text=c3.Text or "NEW",TextColor3=Color3.new(1,1,1),
+                TextSize=11,Font=Enum.Font.GothamBold,Parent=b
+            })
+        end
+
+        -- ── DIALOG ───────────────────────────────────────────
+        function Tab:Dialog(c3)
+            c3=c3 or {}
+            local f=EF(page,36); Pad(0,0,12,12,f)
+            Stroke(1,theme.Accent,0.5,f)
+            List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Center,8,f)
+            if c3.Icon then MakeIcon(c3.Icon,15,theme.Accent,f) end
+            New("TextLabel",{
+                Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Text=c3.Title or "Dialog",
+                TextColor3=theme.Text,TextSize=13,Font=Enum.Font.GothamSemibold,
+                TextXAlignment=Enum.TextXAlignment.Left,Parent=f
+            })
+            local cl=New("TextButton",{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text="",ZIndex=f.ZIndex+1,Parent=f})
+            cl.MouseButton1Click:Connect(function()
+                local ov=New("Frame",{Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.new(0,0,0),BackgroundTransparency=0.5,ZIndex=500,Parent=sg})
+                local db=New("Frame",{
+                    Size=UDim2.fromOffset(300,0),AutomaticSize=Enum.AutomaticSize.Y,
+                    AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),
+                    BackgroundColor3=theme.Surface,ZIndex=501,Parent=ov
+                })
+                Corner(12,db); Stroke(1,theme.Border,0,db); Pad(18,18,18,18,db)
+                List(Enum.FillDirection.Vertical,Enum.HorizontalAlignment.Left,Enum.VerticalAlignment.Top,10,db)
+                New("TextLabel",{
+                    Size=UDim2.new(1,0,0,20),BackgroundTransparency=1,Text=c3.Title or "Dialog",
+                    TextColor3=theme.Text,TextSize=16,Font=Enum.Font.GothamBold,
+                    TextXAlignment=Enum.TextXAlignment.Left,Parent=db
+                })
+                if c3.Content then
+                    New("TextLabel",{
+                        Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,
+                        BackgroundTransparency=1,Text=c3.Content,TextColor3=theme.TextMuted,
+                        TextSize=13,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,
+                        TextWrapped=true,Parent=db
+                    })
+                end
+                local br=New("Frame",{Size=UDim2.new(1,0,0,32),BackgroundTransparency=1,Parent=db})
+                List(Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Right,Enum.VerticalAlignment.Center,8,br)
+                for _,b in ipairs(c3.Buttons or {}) do
+                    local dbtn=New("TextButton",{
+                        Size=UDim2.fromOffset(0,30),AutomaticSize=Enum.AutomaticSize.X,
+                        BackgroundColor3=theme.Accent,Text=b.Title or "OK",
+                        TextColor3=theme.Text,TextSize=13,Font=Enum.Font.GothamBold,Parent=br
+                    })
+                    Corner(8,dbtn); Pad(0,0,14,14,dbtn)
+                    dbtn.MouseButton1Click:Connect(function() if b.Callback then b.Callback() end; ov:Destroy() end)
+                end
+                ov.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then ov:Destroy() end end)
+                db.BackgroundTransparency=1
+                Tween(db,{BackgroundTransparency=0},0.2)
+            end)
+        end
+
+        -- ── TOOLTIP helper ───────────────────────────────────
+        function Tab:Tooltip(element, text)
+            if not element then return end
+            local tip=New("TextLabel",{
+                Size=UDim2.fromOffset(0,24),AutomaticSize=Enum.AutomaticSize.X,
+                BackgroundColor3=theme.SurfaceAlt,Text=text or "",TextColor3=theme.Text,
+                TextSize=11,Font=Enum.Font.Gotham,ZIndex=9999,Visible=false,Parent=sg
+            })
+            Corner(6,tip); Stroke(1,theme.Border,0,tip); Pad(0,0,8,8,tip)
+            element.MouseEnter:Connect(function()
+                tip.Visible=true
+                local mp=UserInputService:GetMouseLocation()
+                tip.Position=UDim2.fromOffset(mp.X+12,mp.Y-14)
+            end)
+            element.MouseMoved:Connect(function(x,y) tip.Position=UDim2.fromOffset(x+12,y-14) end)
+            element.MouseLeave:Connect(function() tip.Visible=false end)
+        end
+
+        return Tab
+    end
+
+    -- ── Config Manager ───────────────────────────────────────
+    Window.ConfigManager=(function()
+        local CM={}; local folder=cfg.Folder or "OlympusUI"; local flags={}
+        pcall(function() if not isfolder(folder) then makefolder(folder) end end)
+        function CM:Config(name)
+            local c={}
+            function c:Save()
+                local data={}
+                for flag,obj in pairs(flags) do pcall(function() data[flag]=tostring(obj:Get()) end) end
+                pcall(function() writefile(folder.."/"..name..".json",HttpService:JSONEncode(data)) end)
+                return true
+            end
+            function c:Load()
+                local ok,raw=pcall(readfile,folder.."/"..name..".json")
+                if not ok then return false end
+                return true
+            end
+            return c
+        end
+        function CM:AllConfigs()
+            local list={}
+            pcall(function() for _,f in ipairs(listfiles(folder)) do local n=f:match("([^/\\]+)%.json$"); if n then table.insert(list,n) end end end)
+            return list
+        end
+        function CM:RegisterFlag(flag,obj) flags[flag]=obj end
+        return CM
+    end)()
+
+    -- ── Window methods ────────────────────────────────────────
+    function Window:SetTheme(name)
+        theme=Themes[name] or theme
+        self:Notify({Title="OlympusUI",Content="Theme: "..name,Icon="palette",Duration=2,Theme=name})
+    end
+
+    function Window:Destroy()
+        Tween(mainF,{BackgroundTransparency=1},0.2); task.wait(0.25); sg:Destroy()
+    end
+
+    function Window:SelectTab(i)
+        if tabs[i] then SwitchTab(tabs[i]) end
+    end
+
+    function Window:Notify(c2)
+        OlympusUI:Notify(c2)
+    end
+
+    -- Animate in
+    mainF.BackgroundTransparency=1
+    Tween(mainF,{BackgroundTransparency=0},0.35)
+
+    table.insert(OlympusUI.Windows, Window)
+    return Window
+end
+
+return OlympusUI
+
